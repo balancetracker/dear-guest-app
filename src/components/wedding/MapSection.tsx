@@ -1,14 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import divider from '@/assets/divider.png';
 
 const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
 
 export default function MapSection() {
   const { t, lang } = useLanguage();
+  const { settings } = useWeddingData();
   const fontClass = lang === 'km' ? 'font-khmer' : '';
-  const mapsUrl = 'https://maps.google.com/?q=11.5564,104.9282';
+  const mapsUrl = `https://maps.google.com/?q=${settings.mapLat},${settings.mapLng}`;
 
   return (
     <motion.section
@@ -26,7 +28,7 @@ export default function MapSection() {
 
         <div className="rounded-2xl overflow-hidden shadow-surface border border-border mb-6">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.7!2d104.9282!3d11.5564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDMzJzIzLjAiTiAxMDTCsDU1JzQxLjUiRQ!5e0!3m2!1sen!2skh!4v1"
+            src={settings.mapEmbedUrl}
             width="100%"
             height="300"
             style={{ border: 0 }}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import heroBg from '@/assets/hero-bg.jpg';
 import divider from '@/assets/divider.png';
 
@@ -8,6 +9,10 @@ const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
 
 export default function HeroSection() {
   const { t, lang } = useLanguage();
+  const { settings } = useWeddingData();
+
+  const names = lang === 'km' ? settings.coupleNamesKm : settings.coupleNames;
+  const date = lang === 'km' ? settings.weddingDateKm : settings.weddingDate;
 
   return (
     <motion.section
@@ -39,7 +44,7 @@ export default function HeroSection() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.4 }}
         >
-          {t('hero.names')}
+          {names}
         </motion.h1>
 
         <motion.div
@@ -57,7 +62,7 @@ export default function HeroSection() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.8 }}
         >
-          {t('hero.date')}
+          {date}
         </motion.p>
 
         {/* Ring sparkle */}
