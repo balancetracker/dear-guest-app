@@ -14,6 +14,26 @@ export interface Wish {
   timestamp: number;
 }
 
+export interface WeddingSettings {
+  coupleNames: string;
+  coupleNamesKm: string;
+  weddingDate: string;
+  weddingDateKm: string;
+  weddingTime: string;
+  weddingTimeKm: string;
+  venueName: string;
+  venueNameKm: string;
+  weddingDateTime: string; // ISO string for countdown
+  calendarUrl: string;
+  mapLat: string;
+  mapLng: string;
+  mapEmbedUrl: string;
+  contactTelegram: string;
+  contactPhone: string;
+  contactFacebook: string;
+  contactEmail: string;
+}
+
 interface WeddingData {
   guests: Guest[];
   wishes: Wish[];
@@ -21,6 +41,7 @@ interface WeddingData {
   bankName: string;
   bankAccount: string;
   bankQR: string;
+  settings: WeddingSettings;
   addGuest: (name: string) => void;
   removeGuest: (id: string) => void;
   updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number) => void;
@@ -28,11 +49,32 @@ interface WeddingData {
   addPhoto: (url: string) => void;
   removePhoto: (url: string) => void;
   setBankInfo: (name: string, account: string, qr: string) => void;
+  updateSettings: (s: Partial<WeddingSettings>) => void;
 }
 
 const WeddingDataContext = createContext<WeddingData | null>(null);
 
 const STORAGE_KEY = 'wedding_data';
+
+const defaultSettings: WeddingSettings = {
+  coupleNames: 'Dara & Sophea',
+  coupleNamesKm: 'តារា & សុភា',
+  weddingDate: 'Saturday, 14 December 2025',
+  weddingDateKm: 'ថ្ងៃសៅរ៍ ១៤ ខែធ្នូ ២០២៥',
+  weddingTime: '11:30 AM',
+  weddingTimeKm: '១១:៣០ ព្រឹក',
+  venueName: 'The Grand Palace Hotel',
+  venueNameKm: 'សណ្ឋាគារ ព្រះបរមរាជវាំង',
+  weddingDateTime: '2025-12-14T11:30:00',
+  calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Dara+%26+Sophea&dates=20251214T043000Z/20251214T120000Z&details=Wedding+Ceremony&location=The+Grand+Palace+Hotel',
+  mapLat: '11.5564',
+  mapLng: '104.9282',
+  mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.7!2d104.9282!3d11.5564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDMzJzIzLjAiTiAxMDTCsDU1JzQxLjUiRQ!5e0!3m2!1sen!2skh!4v1',
+  contactTelegram: 'https://t.me/',
+  contactPhone: '+85512345678',
+  contactFacebook: 'https://facebook.com/',
+  contactEmail: 'wedding@example.com',
+};
 
 function loadData() {
   try {
@@ -56,10 +98,11 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   const [bankName, setBankName] = useState(saved?.bankName ?? 'ABA Bank');
   const [bankAccount, setBankAccount] = useState(saved?.bankAccount ?? '001 234 567');
   const [bankQR, setBankQR] = useState(saved?.bankQR ?? '');
+  const [settings, setSettings] = useState<WeddingSettings>({ ...defaultSettings, ...saved?.settings });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ guests, wishes, photos, bankName, bankAccount, bankQR }));
-  }, [guests, wishes, photos, bankName, bankAccount, bankQR]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ guests, wishes, photos, bankName, bankAccount, bankQR, settings }));
+  }, [guests, wishes, photos, bankName, bankAccount, bankQR, settings]);
 
   const addGuest = (name: string) => {
     setGuests(prev => [...prev, { id: crypto.randomUUID(), name, rsvpStatus: 'pending', numberOfGuests: 1 }]);
@@ -78,9 +121,12 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
     setBankAccount(account);
     setBankQR(qr);
   };
+  const updateSettings = (s: Partial<WeddingSettings>) => {
+    setSettings(prev => ({ ...prev, ...s }));
+  };
 
   return (
-    <WeddingDataContext.Provider value={{ guests, wishes, photos, bankName, bankAccount, bankQR, addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo }}>
+    <WeddingDataContext.Provider value={{ guests, wishes, photos, bankName, bankAccount, bankQR, settings, addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings }}>
       {children}
     </WeddingDataContext.Provider>
   );
