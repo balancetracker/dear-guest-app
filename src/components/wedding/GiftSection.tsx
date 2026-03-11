@@ -9,7 +9,7 @@ const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
 
 export default function GiftSection() {
   const { t, lang } = useLanguage();
-  const { bankName, bankAccount } = useWeddingData();
+  const { bankName, bankAccount, bankQR } = useWeddingData();
   const fontClass = lang === 'km' ? 'font-khmer' : '';
   const [copied, setCopied] = useState(false);
 
@@ -37,6 +37,14 @@ export default function GiftSection() {
 
         <div className="bg-background rounded-2xl p-6 shadow-surface border border-border mb-6">
           <div className="text-4xl mb-4">🎁</div>
+          
+          {/* Bank QR Image */}
+          {bankQR && (
+            <div className="mb-4">
+              <img src={bankQR} alt="Bank QR Code" className="w-48 h-48 object-contain mx-auto rounded-xl" />
+            </div>
+          )}
+
           <p className={`text-sm text-muted-foreground mb-1 ${fontClass}`}>{t('gift.bank')}</p>
           <p className="text-lg font-semibold text-foreground">{bankName}</p>
           <p className="text-2xl font-display font-bold text-foreground mt-2 tracking-wider">{bankAccount}</p>

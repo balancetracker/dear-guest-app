@@ -1,19 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import divider from '@/assets/divider.png';
 
 const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
 
-const contacts = [
-  { icon: '📱', label: 'Telegram', href: 'https://t.me/', color: 'bg-blue-50' },
-  { icon: '📞', label: 'Phone', href: 'tel:+85512345678', color: 'bg-green-50' },
-  { icon: '📘', label: 'Facebook', href: 'https://facebook.com/', color: 'bg-indigo-50' },
-  { icon: '✉️', label: 'Email', href: 'mailto:wedding@example.com', color: 'bg-pink-50' },
-];
-
 export default function ContactSection() {
   const { t, lang } = useLanguage();
+  const { settings } = useWeddingData();
+
+  const contacts = [
+    { icon: '📱', label: 'Telegram', href: settings.contactTelegram, color: 'bg-blue-50' },
+    { icon: '📞', label: 'Phone', href: `tel:${settings.contactPhone}`, color: 'bg-green-50' },
+    { icon: '📘', label: 'Facebook', href: settings.contactFacebook, color: 'bg-indigo-50' },
+    { icon: '✉️', label: 'Email', href: `mailto:${settings.contactEmail}`, color: 'bg-pink-50' },
+  ];
 
   return (
     <motion.section

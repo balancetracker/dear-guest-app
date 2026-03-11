@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
-import { useWeddingData, Guest } from '@/contexts/WeddingDataContext';
+import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { toast } from 'sonner';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
+type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts';
+
 export default function AdminDashboard() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState('');
-  const [tab, setTab] = useState<'guests' | 'rsvp' | 'wishes' | 'photos' | 'settings'>('guests');
+  const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
   const [newGuest, setNewGuest] = useState('');
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
   const baseUrl = window.location.origin;
 
-  // Simple auth (demo only)
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (password === 'wedding2025') {
@@ -99,22 +100,32 @@ export default function AdminDashboard() {
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  const tabs = [
-    { key: 'guests' as const, label: '👥 Guests', },
-    { key: 'rsvp' as const, label: '📋 RSVP', },
-    { key: 'wishes' as const, label: '💌 Wishes', },
-    { key: 'photos' as const, label: '📸 Photos', },
-    { key: 'settings' as const, label: '⚙️ Settings', },
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'guests', label: '👥 Guests' },
+    { key: 'rsvp', label: '📋 RSVP' },
+    { key: 'wishes', label: '💌 Wishes' },
+    { key: 'photos', label: '📸 Photos' },
+    { key: 'wedding', label: '💍 Wedding Info' },
+    { key: 'map', label: '📍 Map' },
+    { key: 'bank', label: '🏦 Bank/Gift' },
+    { key: 'contacts', label: '📱 Contacts' },
   ];
+
+  const inputClass = "w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring";
+  const labelClass = "text-sm text-muted-foreground block mb-1";
+  const sectionCard = "bg-card rounded-2xl p-6 shadow-surface border border-border space-y-5";
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
-        <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground">
-          Logout
-        </button>
+        <div className="flex items-center gap-4">
+          <a href="/" className="text-sm text-accent hover:underline">← View Site</a>
+          <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground">
+            Logout
+          </button>
+        </div>
       </header>
 
       {/* Tabs */}
@@ -143,7 +154,7 @@ export default function AdminDashboard() {
                 onChange={e => setNewGuest(e.target.value)}
                 placeholder="Guest name..."
                 maxLength={100}
-                className="flex-1 min-h-[48px] rounded-xl border border-border bg-card px-4 text-foreground focus:ring-2 focus:ring-ring"
+                className={`flex-1 ${inputClass}`}
               />
               <motion.button
                 type="submit"
@@ -322,8 +333,9 @@ export default function AdminDashboard() {
         {/* PHOTOS TAB */}
         {tab === 'photos' && (
           <div className="space-y-6">
-            <div className="bg-card rounded-2xl p-6 shadow-surface border border-border text-center">
-              <p className="text-muted-foreground mb-4">Add photo URL</p>
+            <div className={sectionCard}>
+              <h3 className="font-display text-lg font-semibold text-foreground">📸 Manage Photos</h3>
+              <p className="text-sm text-muted-foreground">Add photo URLs to display in the gallery. Photos appear on the invitation page.</p>
               <form onSubmit={e => {
                 e.preventDefault();
                 const input = (e.target as HTMLFormElement).elements.namedItem('url') as HTMLInputElement;
@@ -336,8 +348,8 @@ export default function AdminDashboard() {
                 <input
                   name="url"
                   type="url"
-                  placeholder="https://..."
-                  className="flex-1 min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring"
+                  placeholder="https://example.com/photo.jpg"
+                  className={`flex-1 ${inputClass}`}
                 />
                 <motion.button
                   type="submit"
@@ -345,45 +357,94 @@ export default function AdminDashboard() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  Add
+                  + Add
                 </motion.button>
               </form>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {data.photos.map((p, i) => (
-                <div key={i} className="relative group rounded-2xl overflow-hidden shadow-surface border border-border">
-                  <img src={p} alt="" className="w-full h-40 object-cover" />
-                  <button
-                    onClick={() => { data.removePhoto(p); toast.success('Photo removed'); }}
-                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-6 h-6 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            {data.photos.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {data.photos.map((p, i) => (
+                  <div key={i} className="relative group rounded-2xl overflow-hidden shadow-surface border border-border">
+                    <img src={p} alt="" className="w-full h-40 object-cover" />
+                    <button
+                      onClick={() => { data.removePhoto(p); toast.success('Photo removed'); }}
+                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-7 h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {data.photos.length === 0 && (
+              <p className="text-muted-foreground text-center py-8">No photos yet. Default placeholder photos will be shown.</p>
+            )}
           </div>
         )}
 
-        {/* SETTINGS TAB */}
-        {tab === 'settings' && (
-          <div className="bg-card rounded-2xl p-6 shadow-surface border border-border space-y-6">
-            <h3 className="font-display text-lg font-semibold text-foreground">Bank / Gift Settings</h3>
+        {/* WEDDING INFO TAB */}
+        {tab === 'wedding' && (
+          <div className={sectionCard}>
+            <h3 className="font-display text-lg font-semibold text-foreground">💍 Wedding Details</h3>
+            <p className="text-sm text-muted-foreground">Edit couple names, date, time, venue, and calendar link.</p>
             <form onSubmit={e => {
               e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              const name = (form.elements.namedItem('bankName') as HTMLInputElement).value;
-              const account = (form.elements.namedItem('bankAccount') as HTMLInputElement).value;
-              data.setBankInfo(name, account, '');
-              toast.success('Bank info updated!');
+              const fd = new FormData(e.target as HTMLFormElement);
+              data.updateSettings({
+                coupleNames: fd.get('coupleNames') as string,
+                coupleNamesKm: fd.get('coupleNamesKm') as string,
+                weddingDate: fd.get('weddingDate') as string,
+                weddingDateKm: fd.get('weddingDateKm') as string,
+                weddingTime: fd.get('weddingTime') as string,
+                weddingTimeKm: fd.get('weddingTimeKm') as string,
+                venueName: fd.get('venueName') as string,
+                venueNameKm: fd.get('venueNameKm') as string,
+                weddingDateTime: fd.get('weddingDateTime') as string,
+                calendarUrl: fd.get('calendarUrl') as string,
+              });
+              toast.success('Wedding info saved!');
             }} className="space-y-4">
-              <div>
-                <label className="text-sm text-muted-foreground block mb-1">Bank Name</label>
-                <input name="bankName" defaultValue={data.bankName} className="w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Couple Names (EN)</label>
+                  <input name="coupleNames" defaultValue={data.settings.coupleNames} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Couple Names (KM)</label>
+                  <input name="coupleNamesKm" defaultValue={data.settings.coupleNamesKm} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Wedding Date (EN)</label>
+                  <input name="weddingDate" defaultValue={data.settings.weddingDate} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Wedding Date (KM)</label>
+                  <input name="weddingDateKm" defaultValue={data.settings.weddingDateKm} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Time (EN)</label>
+                  <input name="weddingTime" defaultValue={data.settings.weddingTime} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Time (KM)</label>
+                  <input name="weddingTimeKm" defaultValue={data.settings.weddingTimeKm} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Venue (EN)</label>
+                  <input name="venueName" defaultValue={data.settings.venueName} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Venue (KM)</label>
+                  <input name="venueNameKm" defaultValue={data.settings.venueNameKm} className={inputClass} />
+                </div>
               </div>
               <div>
-                <label className="text-sm text-muted-foreground block mb-1">Account Number</label>
-                <input name="bankAccount" defaultValue={data.bankAccount} className="w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring" />
+                <label className={labelClass}>Wedding Date/Time (for countdown, ISO format)</label>
+                <input name="weddingDateTime" type="datetime-local" defaultValue={data.settings.weddingDateTime.slice(0, 16)} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass}>Google Calendar URL</label>
+                <input name="calendarUrl" defaultValue={data.settings.calendarUrl} className={inputClass} />
               </div>
               <motion.button
                 type="submit"
@@ -391,7 +452,160 @@ export default function AdminDashboard() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
-                Save Settings
+                💾 Save Wedding Info
+              </motion.button>
+            </form>
+          </div>
+        )}
+
+        {/* MAP TAB */}
+        {tab === 'map' && (
+          <div className={sectionCard}>
+            <h3 className="font-display text-lg font-semibold text-foreground">📍 Map & Location</h3>
+            <p className="text-sm text-muted-foreground">Set the Google Maps embed URL and coordinates for the "Open in Maps" button.</p>
+            <form onSubmit={e => {
+              e.preventDefault();
+              const fd = new FormData(e.target as HTMLFormElement);
+              data.updateSettings({
+                mapLat: fd.get('mapLat') as string,
+                mapLng: fd.get('mapLng') as string,
+                mapEmbedUrl: fd.get('mapEmbedUrl') as string,
+              });
+              toast.success('Map settings saved!');
+            }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Latitude</label>
+                  <input name="mapLat" defaultValue={data.settings.mapLat} className={inputClass} placeholder="11.5564" />
+                </div>
+                <div>
+                  <label className={labelClass}>Longitude</label>
+                  <input name="mapLng" defaultValue={data.settings.mapLng} className={inputClass} placeholder="104.9282" />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Google Maps Embed URL</label>
+                <textarea
+                  name="mapEmbedUrl"
+                  defaultValue={data.settings.mapEmbedUrl}
+                  rows={3}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground text-sm focus:ring-2 focus:ring-ring"
+                  placeholder="Paste the src URL from Google Maps embed code..."
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Go to Google Maps → Share → Embed → Copy the src="..." URL
+                </p>
+              </div>
+              {/* Preview */}
+              {data.settings.mapEmbedUrl && (
+                <div className="rounded-xl overflow-hidden border border-border">
+                  <iframe
+                    src={data.settings.mapEmbedUrl}
+                    width="100%"
+                    height="200"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    title="Map preview"
+                  />
+                </div>
+              )}
+              <motion.button
+                type="submit"
+                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                💾 Save Map Settings
+              </motion.button>
+            </form>
+          </div>
+        )}
+
+        {/* BANK/GIFT TAB */}
+        {tab === 'bank' && (
+          <div className={sectionCard}>
+            <h3 className="font-display text-lg font-semibold text-foreground">🏦 Bank & Gift Settings</h3>
+            <p className="text-sm text-muted-foreground">Set bank name, account number, and upload QR code image.</p>
+            <form onSubmit={e => {
+              e.preventDefault();
+              const fd = new FormData(e.target as HTMLFormElement);
+              data.setBankInfo(
+                fd.get('bankName') as string,
+                fd.get('bankAccount') as string,
+                fd.get('bankQR') as string,
+              );
+              toast.success('Bank info saved!');
+            }} className="space-y-4">
+              <div>
+                <label className={labelClass}>Bank Name</label>
+                <input name="bankName" defaultValue={data.bankName} className={inputClass} placeholder="ABA Bank" />
+              </div>
+              <div>
+                <label className={labelClass}>Account Number</label>
+                <input name="bankAccount" defaultValue={data.bankAccount} className={inputClass} placeholder="001 234 567" />
+              </div>
+              <div>
+                <label className={labelClass}>Bank QR Code Image URL</label>
+                <input name="bankQR" defaultValue={data.bankQR} type="url" className={inputClass} placeholder="https://example.com/qr.png" />
+                <p className="text-xs text-muted-foreground mt-1">Upload your bank QR image to any image host and paste the URL here.</p>
+              </div>
+              {/* QR Preview */}
+              {data.bankQR && (
+                <div className="flex justify-center">
+                  <img src={data.bankQR} alt="Bank QR" className="w-48 h-48 object-contain rounded-xl border border-border" />
+                </div>
+              )}
+              <motion.button
+                type="submit"
+                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                💾 Save Bank Info
+              </motion.button>
+            </form>
+          </div>
+        )}
+
+        {/* CONTACTS TAB */}
+        {tab === 'contacts' && (
+          <div className={sectionCard}>
+            <h3 className="font-display text-lg font-semibold text-foreground">📱 Contact Links</h3>
+            <p className="text-sm text-muted-foreground">Set the contact links displayed on the invitation page.</p>
+            <form onSubmit={e => {
+              e.preventDefault();
+              const fd = new FormData(e.target as HTMLFormElement);
+              data.updateSettings({
+                contactTelegram: fd.get('contactTelegram') as string,
+                contactPhone: fd.get('contactPhone') as string,
+                contactFacebook: fd.get('contactFacebook') as string,
+                contactEmail: fd.get('contactEmail') as string,
+              });
+              toast.success('Contact info saved!');
+            }} className="space-y-4">
+              <div>
+                <label className={labelClass}>📱 Telegram URL</label>
+                <input name="contactTelegram" defaultValue={data.settings.contactTelegram} className={inputClass} placeholder="https://t.me/username" />
+              </div>
+              <div>
+                <label className={labelClass}>📞 Phone Number</label>
+                <input name="contactPhone" defaultValue={data.settings.contactPhone} className={inputClass} placeholder="+85512345678" />
+              </div>
+              <div>
+                <label className={labelClass}>📘 Facebook URL</label>
+                <input name="contactFacebook" defaultValue={data.settings.contactFacebook} className={inputClass} placeholder="https://facebook.com/username" />
+              </div>
+              <div>
+                <label className={labelClass}>✉️ Email</label>
+                <input name="contactEmail" defaultValue={data.settings.contactEmail} className={inputClass} placeholder="wedding@example.com" />
+              </div>
+              <motion.button
+                type="submit"
+                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                💾 Save Contacts
               </motion.button>
             </form>
           </div>
