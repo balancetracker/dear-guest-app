@@ -18,7 +18,7 @@ export default function TimelineSection() {
 
   return (
     <motion.section
-      className="py-24 px-6"
+      className="py-24 px-6 bg-card/50"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -31,8 +31,7 @@ export default function TimelineSection() {
         <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-12" />
 
         <div className="relative">
-          {/* Vertical line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border -translate-x-1/2" />
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-border/50 -translate-x-1/2" />
 
           {timelineData.map((item, i) => (
             <motion.div
@@ -44,7 +43,10 @@ export default function TimelineSection() {
               transition={{ ...spring, delay: i * 0.15 }}
             >
               <div className={`w-5/12 ${i % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
-                <div className="bg-card rounded-2xl p-5 shadow-surface border border-border">
+                <motion.div
+                  className="glass-card rounded-2xl p-5"
+                  whileHover={{ scale: 1.03 }}
+                >
                   <p className="text-sm text-muted-foreground mb-1">{item.year}</p>
                   <h3 className={`font-semibold text-foreground mb-1 ${fontClass}`}>
                     {t(`timeline.${item.key}`)}
@@ -52,11 +54,10 @@ export default function TimelineSection() {
                   <p className={`text-sm text-muted-foreground ${fontClass}`}>
                     {t(`timeline.${item.key}_desc`)}
                   </p>
-                </div>
+                </motion.div>
               </div>
 
-              {/* Center dot */}
-              <div className="absolute left-1/2 -translate-x-1/2 w-10 h-10 bg-primary rounded-full flex items-center justify-center text-lg shadow-surface border-4 border-background z-10">
+              <div className="absolute left-1/2 -translate-x-1/2 w-11 h-11 bg-primary/60 backdrop-blur-sm rounded-full flex items-center justify-center text-lg shadow-surface border-4 border-background z-10">
                 {item.icon}
               </div>
 

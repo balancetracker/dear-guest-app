@@ -23,7 +23,7 @@ export interface WeddingSettings {
   weddingTimeKm: string;
   venueName: string;
   venueNameKm: string;
-  weddingDateTime: string; // ISO string for countdown
+  weddingDateTime: string;
   calendarUrl: string;
   mapLat: string;
   mapLng: string;
@@ -32,6 +32,10 @@ export interface WeddingSettings {
   contactPhone: string;
   contactFacebook: string;
   contactEmail: string;
+  musicUrl: string;
+  heroImage: string;
+  weddingDescription: string;
+  weddingDescriptionKm: string;
 }
 
 interface WeddingData {
@@ -74,6 +78,10 @@ const defaultSettings: WeddingSettings = {
   contactPhone: '+85512345678',
   contactFacebook: 'https://facebook.com/',
   contactEmail: 'wedding@example.com',
+  musicUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  heroImage: '',
+  weddingDescription: 'We joyfully invite you to celebrate the beginning of our new journey together.',
+  weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
 };
 
 function loadData() {

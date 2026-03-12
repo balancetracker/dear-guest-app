@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
@@ -6,7 +6,70 @@ import { toast } from 'sonner';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
-type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts';
+type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts' | 'music';
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function ImageUpload({ onUpload, label, current, accept }: {
+  onUpload: (dataUrl: string) => void;
+  label: string;
+  current?: string;
+  accept?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleFiles = useCallback(async (files: FileList | null) => {
+    if (!files?.length) return;
+    const file = files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File too large (max 5MB)');
+      return;
+    }
+    const base64 = await fileToBase64(file);
+    onUpload(base64);
+    toast.success('Image uploaded!');
+  }, [onUpload]);
+
+  return (
+    <div
+      className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
+        dragOver ? 'border-accent bg-accent/10' : 'border-border hover:border-accent/50'
+      }`}
+      onClick={() => inputRef.current?.click()}
+      onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept || 'image/*'}
+        className="hidden"
+        onChange={e => handleFiles(e.target.files)}
+      />
+      {current ? (
+        <div className="space-y-3">
+          <img src={current} alt="" className="w-32 h-32 object-cover mx-auto rounded-xl" />
+          <p className="text-xs text-muted-foreground">Click or drag to replace</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="text-3xl">📷</div>
+          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground">Click or drag & drop • Max 5MB</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [authed, setAuthed] = useState(false);
@@ -31,7 +94,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <motion.div
-          className="bg-card rounded-2xl p-8 shadow-surface border border-border w-full max-w-sm text-center"
+          className="glass-strong rounded-3xl p-8 w-full max-w-sm text-center"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={spring}
@@ -100,50 +163,62 @@ export default function AdminDashboard() {
     img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: 'guests', label: '👥 Guests' },
-    { key: 'rsvp', label: '📋 RSVP' },
-    { key: 'wishes', label: '💌 Wishes' },
-    { key: 'photos', label: '📸 Photos' },
-    { key: 'wedding', label: '💍 Wedding Info' },
-    { key: 'map', label: '📍 Map' },
-    { key: 'bank', label: '🏦 Bank/Gift' },
-    { key: 'contacts', label: '📱 Contacts' },
+  const tabs: { key: Tab; label: string; icon: string }[] = [
+    { key: 'guests', label: 'Guests', icon: '👥' },
+    { key: 'rsvp', label: 'RSVP', icon: '📋' },
+    { key: 'wishes', label: 'Wishes', icon: '💌' },
+    { key: 'photos', label: 'Photos', icon: '📸' },
+    { key: 'wedding', label: 'Info', icon: '💍' },
+    { key: 'map', label: 'Map', icon: '📍' },
+    { key: 'bank', label: 'Bank', icon: '🏦' },
+    { key: 'contacts', label: 'Contact', icon: '📱' },
+    { key: 'music', label: 'Music', icon: '🎵' },
   ];
 
   const inputClass = "w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring";
-  const labelClass = "text-sm text-muted-foreground block mb-1";
-  const sectionCard = "bg-card rounded-2xl p-6 shadow-surface border border-border space-y-5";
+  const labelClass = "text-sm text-muted-foreground block mb-1 font-medium";
+  const sectionCard = "glass-card rounded-3xl p-6 space-y-5";
+  const saveBtn = "bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface font-medium";
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+      <header className="glass-strong border-b border-border/30 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
-          <a href="/" className="text-sm text-accent hover:underline">← View Site</a>
-          <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground">
+          <a href="/" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
+          <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
         </div>
       </header>
 
       {/* Tabs */}
-      <div className="border-b border-border bg-card px-6 flex gap-1 overflow-x-auto">
+      <div className="border-b border-border/30 glass px-4 flex gap-1 overflow-x-auto sticky top-[65px] z-20">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
+            className={`px-3 py-3 text-xs font-medium whitespace-nowrap transition-all border-b-2 ${
               tab === t.key ? 'border-accent text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
+            <span className="block text-lg mb-0.5">{t.icon}</span>
             {t.label}
           </button>
         ))}
       </div>
 
       <main className="max-w-4xl mx-auto p-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+
         {/* GUESTS TAB */}
         {tab === 'guests' && (
           <div className="space-y-6">
@@ -158,7 +233,7 @@ export default function AdminDashboard() {
               />
               <motion.button
                 type="submit"
-                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 font-display shadow-surface"
+                className={saveBtn}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -166,15 +241,16 @@ export default function AdminDashboard() {
               </motion.button>
             </form>
 
-            <div className="flex justify-end">
-              <button onClick={exportCSV} className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">{data.guests.length} guests</span>
+              <button onClick={exportCSV} className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">
                 📥 Export CSV
               </button>
             </div>
 
-            <div className="bg-card rounded-2xl shadow-surface border border-border overflow-hidden">
+            <div className="glass-card rounded-2xl overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-muted">
+                <thead className="bg-muted/50">
                   <tr>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
@@ -182,17 +258,17 @@ export default function AdminDashboard() {
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-border/30">
                   {data.guests.map(g => (
-                    <tr key={g.id} className="hover:bg-muted/50">
+                    <tr key={g.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 font-medium text-foreground">{g.name}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                           g.rsvpStatus === 'attending' ? 'bg-green-100 text-green-800' :
                           g.rsvpStatus === 'not_attending' ? 'bg-red-100 text-red-800' :
                           'bg-yellow-100 text-yellow-800'
                         }`}>
-                          {g.rsvpStatus}
+                          {g.rsvpStatus === 'attending' ? '✅ Attending' : g.rsvpStatus === 'not_attending' ? '❌ Not attending' : '⏳ Pending'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -203,19 +279,19 @@ export default function AdminDashboard() {
                           }}
                           className="text-accent hover:underline text-xs"
                         >
-                          Copy link
+                          📋 Copy
                         </button>
                       </td>
                       <td className="px-4 py-3 flex gap-2">
                         <button
                           onClick={() => setSelectedQR(selectedQR === g.name ? null : g.name)}
-                          className="text-xs bg-primary/30 rounded-full px-3 py-1 hover:bg-primary/50"
+                          className="text-xs bg-primary/30 rounded-full px-3 py-1.5 hover:bg-primary/50 transition-colors"
                         >
                           QR
                         </button>
                         <button
-                          onClick={() => data.removeGuest(g.id)}
-                          className="text-xs text-destructive hover:underline"
+                          onClick={() => { data.removeGuest(g.id); toast.success('Guest removed'); }}
+                          className="text-xs text-destructive hover:bg-destructive/10 rounded-full px-3 py-1.5 transition-colors"
                         >
                           Delete
                         </button>
@@ -224,26 +300,32 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              {data.guests.length === 0 && (
+                <p className="text-center py-8 text-muted-foreground">No guests yet. Add one above!</p>
+              )}
             </div>
 
             {/* QR Modal */}
+            <AnimatePresence>
             {selectedQR && (
               <motion.div
                 className="fixed inset-0 bg-foreground/30 backdrop-blur-sm z-50 flex items-center justify-center p-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
                 onClick={() => setSelectedQR(null)}
               >
                 <motion.div
-                  className="bg-card rounded-2xl p-8 shadow-surface border border-border text-center max-w-sm w-full"
+                  className="glass-strong rounded-3xl p-8 text-center max-w-sm w-full"
                   initial={{ scale: 0.9 }}
                   animate={{ scale: 1 }}
+                  exit={{ scale: 0.9 }}
                   onClick={e => e.stopPropagation()}
                 >
                   <h3 className="font-display text-xl font-semibold text-foreground mb-4">
                     Invitation for {selectedQR}
                   </h3>
-                  <div className="flex justify-center mb-4">
+                  <div className="flex justify-center mb-4 bg-card rounded-2xl p-4">
                     <QRCodeSVG
                       id={`qr-${selectedQR}`}
                       value={`${baseUrl}/?guest=${encodeURIComponent(selectedQR)}`}
@@ -258,7 +340,7 @@ export default function AdminDashboard() {
                   <div className="flex gap-3 justify-center">
                     <motion.button
                       onClick={() => downloadQR(selectedQR)}
-                      className="bg-accent text-accent-foreground rounded-full px-4 py-2 text-sm shadow-surface"
+                      className={saveBtn}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
                     >
@@ -276,37 +358,46 @@ export default function AdminDashboard() {
                 </motion.div>
               </motion.div>
             )}
+            </AnimatePresence>
           </div>
         )}
 
         {/* RSVP TAB */}
         {tab === 'rsvp' && (
-          <div className="bg-card rounded-2xl shadow-surface border border-border overflow-hidden">
-            <div className="p-4 bg-muted flex justify-between items-center">
-              <span className="font-medium text-foreground">RSVP Responses</span>
-              <span className="text-sm text-muted-foreground">
-                {data.guests.filter(g => g.rsvpStatus === 'attending').length} attending / {data.guests.length} total
-              </span>
+          <div className="glass-card rounded-2xl overflow-hidden">
+            <div className="p-4 bg-muted/30 flex justify-between items-center border-b border-border/30">
+              <span className="font-medium text-foreground">📋 RSVP Responses</span>
+              <div className="flex gap-3 text-sm">
+                <span className="bg-green-100 text-green-800 rounded-full px-3 py-1">
+                  ✅ {data.guests.filter(g => g.rsvpStatus === 'attending').length}
+                </span>
+                <span className="bg-red-100 text-red-800 rounded-full px-3 py-1">
+                  ❌ {data.guests.filter(g => g.rsvpStatus === 'not_attending').length}
+                </span>
+                <span className="bg-yellow-100 text-yellow-800 rounded-full px-3 py-1">
+                  ⏳ {data.guests.filter(g => g.rsvpStatus === 'pending').length}
+                </span>
+              </div>
             </div>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border">
+                <tr className="border-b border-border/30">
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground"># Guests</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/30">
                 {data.guests.map(g => (
-                  <tr key={g.id}>
-                    <td className="px-4 py-3 text-foreground">{g.name}</td>
+                  <tr key={g.id} className="hover:bg-muted/20">
+                    <td className="px-4 py-3 text-foreground font-medium">{g.name}</td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${
                         g.rsvpStatus === 'attending' ? 'bg-green-100 text-green-800' :
                         g.rsvpStatus === 'not_attending' ? 'bg-red-100 text-red-800' :
                         'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {g.rsvpStatus}
+                        {g.rsvpStatus === 'attending' ? '✅ Yes' : g.rsvpStatus === 'not_attending' ? '❌ No' : '⏳ Pending'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-foreground">{g.numberOfGuests}</td>
@@ -320,12 +411,20 @@ export default function AdminDashboard() {
         {/* WISHES TAB */}
         {tab === 'wishes' && (
           <div className="space-y-4">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="font-display text-lg font-semibold text-foreground">💌 Guest Wishes ({data.wishes.length})</h3>
+            </div>
             {data.wishes.length === 0 && <p className="text-muted-foreground text-center py-8">No wishes yet.</p>}
             {data.wishes.map(w => (
-              <div key={w.id} className="bg-card rounded-2xl p-5 shadow-surface border border-border">
-                <p className="text-foreground mb-2">{w.message}</p>
+              <motion.div
+                key={w.id}
+                className="glass-card rounded-2xl p-5"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <p className="text-foreground mb-2">"{w.message}"</p>
                 <p className="text-sm text-muted-foreground">— {w.guestName} · {new Date(w.timestamp).toLocaleDateString()}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
@@ -334,8 +433,16 @@ export default function AdminDashboard() {
         {tab === 'photos' && (
           <div className="space-y-6">
             <div className={sectionCard}>
-              <h3 className="font-display text-lg font-semibold text-foreground">📸 Manage Photos</h3>
-              <p className="text-sm text-muted-foreground">Add photo URLs to display in the gallery. Photos appear on the invitation page.</p>
+              <h3 className="font-display text-lg font-semibold text-foreground">📸 Upload Gallery Photos</h3>
+              <p className="text-sm text-muted-foreground">Upload photos directly or paste URLs. Photos appear on the invitation page.</p>
+              
+              {/* Upload area */}
+              <ImageUpload
+                label="Click to upload a photo"
+                onUpload={(base64) => { data.addPhoto(base64); }}
+              />
+
+              {/* URL input */}
               <form onSubmit={e => {
                 e.preventDefault();
                 const input = (e.target as HTMLFormElement).elements.namedItem('url') as HTMLInputElement;
@@ -348,113 +455,153 @@ export default function AdminDashboard() {
                 <input
                   name="url"
                   type="url"
-                  placeholder="https://example.com/photo.jpg"
+                  placeholder="Or paste image URL..."
                   className={`flex-1 ${inputClass}`}
                 />
                 <motion.button
                   type="submit"
-                  className="bg-accent text-accent-foreground rounded-full px-6 min-h-[48px] shadow-surface"
+                  className={saveBtn}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  + Add
+                  + URL
                 </motion.button>
               </form>
             </div>
+
             {data.photos.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {data.photos.map((p, i) => (
-                  <div key={i} className="relative group rounded-2xl overflow-hidden shadow-surface border border-border">
-                    <img src={p} alt="" className="w-full h-40 object-cover" />
-                    <button
-                      onClick={() => { data.removePhoto(p); toast.success('Photo removed'); }}
-                      className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-7 h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground mb-3">{data.photos.length} photos uploaded</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {data.photos.map((p, i) => (
+                    <motion.div
+                      key={i}
+                      className="relative group glass-card rounded-2xl overflow-hidden"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
                     >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+                      <img src={p} alt="" className="w-full h-40 object-cover" />
+                      <button
+                        onClick={() => { data.removePhoto(p); toast.success('Photo removed'); }}
+                        className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full w-8 h-8 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg"
+                      >
+                        ✕
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             )}
             {data.photos.length === 0 && (
-              <p className="text-muted-foreground text-center py-8">No photos yet. Default placeholder photos will be shown.</p>
+              <p className="text-muted-foreground text-center py-8">No photos yet. Default placeholders will be shown.</p>
             )}
           </div>
         )}
 
         {/* WEDDING INFO TAB */}
         {tab === 'wedding' && (
-          <div className={sectionCard}>
-            <h3 className="font-display text-lg font-semibold text-foreground">💍 Wedding Details</h3>
-            <p className="text-sm text-muted-foreground">Edit couple names, date, time, venue, and calendar link.</p>
-            <form onSubmit={e => {
-              e.preventDefault();
-              const fd = new FormData(e.target as HTMLFormElement);
-              data.updateSettings({
-                coupleNames: fd.get('coupleNames') as string,
-                coupleNamesKm: fd.get('coupleNamesKm') as string,
-                weddingDate: fd.get('weddingDate') as string,
-                weddingDateKm: fd.get('weddingDateKm') as string,
-                weddingTime: fd.get('weddingTime') as string,
-                weddingTimeKm: fd.get('weddingTimeKm') as string,
-                venueName: fd.get('venueName') as string,
-                venueNameKm: fd.get('venueNameKm') as string,
-                weddingDateTime: fd.get('weddingDateTime') as string,
-                calendarUrl: fd.get('calendarUrl') as string,
-              });
-              toast.success('Wedding info saved!');
-            }} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass}>Couple Names (EN)</label>
-                  <input name="coupleNames" defaultValue={data.settings.coupleNames} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Couple Names (KM)</label>
-                  <input name="coupleNamesKm" defaultValue={data.settings.coupleNamesKm} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Wedding Date (EN)</label>
-                  <input name="weddingDate" defaultValue={data.settings.weddingDate} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Wedding Date (KM)</label>
-                  <input name="weddingDateKm" defaultValue={data.settings.weddingDateKm} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Time (EN)</label>
-                  <input name="weddingTime" defaultValue={data.settings.weddingTime} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Time (KM)</label>
-                  <input name="weddingTimeKm" defaultValue={data.settings.weddingTimeKm} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Venue (EN)</label>
-                  <input name="venueName" defaultValue={data.settings.venueName} className={inputClass} />
-                </div>
-                <div>
-                  <label className={labelClass}>Venue (KM)</label>
-                  <input name="venueNameKm" defaultValue={data.settings.venueNameKm} className={inputClass} />
-                </div>
-              </div>
+          <div className="space-y-6">
+            <div className={sectionCard}>
+              <h3 className="font-display text-lg font-semibold text-foreground">💍 Wedding Details</h3>
+              
+              {/* Hero Image Upload */}
               <div>
-                <label className={labelClass}>Wedding Date/Time (for countdown, ISO format)</label>
-                <input name="weddingDateTime" type="datetime-local" defaultValue={data.settings.weddingDateTime.slice(0, 16)} className={inputClass} />
+                <label className={labelClass}>Hero Background Image</label>
+                <ImageUpload
+                  label="Upload hero background photo"
+                  current={data.settings.heroImage || undefined}
+                  onUpload={(base64) => data.updateSettings({ heroImage: base64 })}
+                />
+                {data.settings.heroImage && (
+                  <button
+                    onClick={() => data.updateSettings({ heroImage: '' })}
+                    className="text-xs text-destructive mt-2 hover:underline"
+                  >
+                    Remove & use default
+                  </button>
+                )}
               </div>
-              <div>
-                <label className={labelClass}>Google Calendar URL</label>
-                <input name="calendarUrl" defaultValue={data.settings.calendarUrl} className={inputClass} />
-              </div>
-              <motion.button
-                type="submit"
-                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                💾 Save Wedding Info
-              </motion.button>
-            </form>
+
+              <form onSubmit={e => {
+                e.preventDefault();
+                const fd = new FormData(e.target as HTMLFormElement);
+                data.updateSettings({
+                  coupleNames: fd.get('coupleNames') as string,
+                  coupleNamesKm: fd.get('coupleNamesKm') as string,
+                  weddingDate: fd.get('weddingDate') as string,
+                  weddingDateKm: fd.get('weddingDateKm') as string,
+                  weddingTime: fd.get('weddingTime') as string,
+                  weddingTimeKm: fd.get('weddingTimeKm') as string,
+                  venueName: fd.get('venueName') as string,
+                  venueNameKm: fd.get('venueNameKm') as string,
+                  weddingDateTime: fd.get('weddingDateTime') as string,
+                  calendarUrl: fd.get('calendarUrl') as string,
+                  weddingDescription: fd.get('weddingDescription') as string,
+                  weddingDescriptionKm: fd.get('weddingDescriptionKm') as string,
+                });
+                toast.success('Wedding info saved!');
+              }} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Couple Names (EN)</label>
+                    <input name="coupleNames" defaultValue={data.settings.coupleNames} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Couple Names (KM)</label>
+                    <input name="coupleNamesKm" defaultValue={data.settings.coupleNamesKm} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Wedding Date (EN)</label>
+                    <input name="weddingDate" defaultValue={data.settings.weddingDate} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Wedding Date (KM)</label>
+                    <input name="weddingDateKm" defaultValue={data.settings.weddingDateKm} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Time (EN)</label>
+                    <input name="weddingTime" defaultValue={data.settings.weddingTime} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Time (KM)</label>
+                    <input name="weddingTimeKm" defaultValue={data.settings.weddingTimeKm} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Venue (EN)</label>
+                    <input name="venueName" defaultValue={data.settings.venueName} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Venue (KM)</label>
+                    <input name="venueNameKm" defaultValue={data.settings.venueNameKm} className={inputClass} />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelClass}>Description (EN)</label>
+                  <textarea name="weddingDescription" defaultValue={data.settings.weddingDescription} rows={2} className={`${inputClass} py-3`} />
+                </div>
+                <div>
+                  <label className={labelClass}>Description (KM)</label>
+                  <textarea name="weddingDescriptionKm" defaultValue={data.settings.weddingDescriptionKm} rows={2} className={`${inputClass} py-3`} />
+                </div>
+                <div>
+                  <label className={labelClass}>Wedding Date/Time (countdown)</label>
+                  <input name="weddingDateTime" type="datetime-local" defaultValue={data.settings.weddingDateTime.slice(0, 16)} className={inputClass} />
+                </div>
+                <div>
+                  <label className={labelClass}>Google Calendar URL</label>
+                  <input name="calendarUrl" defaultValue={data.settings.calendarUrl} className={inputClass} />
+                </div>
+                <motion.button
+                  type="submit"
+                  className={saveBtn}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  💾 Save Wedding Info
+                </motion.button>
+              </form>
+            </div>
           </div>
         )}
 
@@ -462,7 +609,7 @@ export default function AdminDashboard() {
         {tab === 'map' && (
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">📍 Map & Location</h3>
-            <p className="text-sm text-muted-foreground">Set the Google Maps embed URL and coordinates for the "Open in Maps" button.</p>
+            <p className="text-sm text-muted-foreground">Set the Google Maps embed URL and coordinates.</p>
             <form onSubmit={e => {
               e.preventDefault();
               const fd = new FormData(e.target as HTMLFormElement);
@@ -489,16 +636,15 @@ export default function AdminDashboard() {
                   name="mapEmbedUrl"
                   defaultValue={data.settings.mapEmbedUrl}
                   rows={3}
-                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground text-sm focus:ring-2 focus:ring-ring"
-                  placeholder="Paste the src URL from Google Maps embed code..."
+                  className={`${inputClass} py-3 text-sm`}
+                  placeholder="Paste the src URL from Google Maps embed..."
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Go to Google Maps → Share → Embed → Copy the src="..." URL
+                  Google Maps → Share → Embed → Copy the src="..." URL
                 </p>
               </div>
-              {/* Preview */}
               {data.settings.mapEmbedUrl && (
-                <div className="rounded-xl overflow-hidden border border-border">
+                <div className="rounded-xl overflow-hidden border border-border/30">
                   <iframe
                     src={data.settings.mapEmbedUrl}
                     width="100%"
@@ -511,7 +657,7 @@ export default function AdminDashboard() {
               )}
               <motion.button
                 type="submit"
-                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                className={saveBtn}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -525,14 +671,33 @@ export default function AdminDashboard() {
         {tab === 'bank' && (
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">🏦 Bank & Gift Settings</h3>
-            <p className="text-sm text-muted-foreground">Set bank name, account number, and upload QR code image.</p>
+            <p className="text-sm text-muted-foreground">Upload your bank QR code and set account details.</p>
+            
+            {/* QR Upload */}
+            <div>
+              <label className={labelClass}>Bank QR Code Image</label>
+              <ImageUpload
+                label="Upload bank QR code"
+                current={data.bankQR || undefined}
+                onUpload={(base64) => data.setBankInfo(data.bankName, data.bankAccount, base64)}
+              />
+              {data.bankQR && (
+                <button
+                  onClick={() => data.setBankInfo(data.bankName, data.bankAccount, '')}
+                  className="text-xs text-destructive mt-2 hover:underline"
+                >
+                  Remove QR image
+                </button>
+              )}
+            </div>
+
             <form onSubmit={e => {
               e.preventDefault();
               const fd = new FormData(e.target as HTMLFormElement);
               data.setBankInfo(
                 fd.get('bankName') as string,
                 fd.get('bankAccount') as string,
-                fd.get('bankQR') as string,
+                data.bankQR,
               );
               toast.success('Bank info saved!');
             }} className="space-y-4">
@@ -544,20 +709,9 @@ export default function AdminDashboard() {
                 <label className={labelClass}>Account Number</label>
                 <input name="bankAccount" defaultValue={data.bankAccount} className={inputClass} placeholder="001 234 567" />
               </div>
-              <div>
-                <label className={labelClass}>Bank QR Code Image URL</label>
-                <input name="bankQR" defaultValue={data.bankQR} type="url" className={inputClass} placeholder="https://example.com/qr.png" />
-                <p className="text-xs text-muted-foreground mt-1">Upload your bank QR image to any image host and paste the URL here.</p>
-              </div>
-              {/* QR Preview */}
-              {data.bankQR && (
-                <div className="flex justify-center">
-                  <img src={data.bankQR} alt="Bank QR" className="w-48 h-48 object-contain rounded-xl border border-border" />
-                </div>
-              )}
               <motion.button
                 type="submit"
-                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                className={saveBtn}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -571,7 +725,6 @@ export default function AdminDashboard() {
         {tab === 'contacts' && (
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">📱 Contact Links</h3>
-            <p className="text-sm text-muted-foreground">Set the contact links displayed on the invitation page.</p>
             <form onSubmit={e => {
               e.preventDefault();
               const fd = new FormData(e.target as HTMLFormElement);
@@ -585,23 +738,23 @@ export default function AdminDashboard() {
             }} className="space-y-4">
               <div>
                 <label className={labelClass}>📱 Telegram URL</label>
-                <input name="contactTelegram" defaultValue={data.settings.contactTelegram} className={inputClass} placeholder="https://t.me/username" />
+                <input name="contactTelegram" defaultValue={data.settings.contactTelegram} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>📞 Phone Number</label>
-                <input name="contactPhone" defaultValue={data.settings.contactPhone} className={inputClass} placeholder="+85512345678" />
+                <input name="contactPhone" defaultValue={data.settings.contactPhone} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>📘 Facebook URL</label>
-                <input name="contactFacebook" defaultValue={data.settings.contactFacebook} className={inputClass} placeholder="https://facebook.com/username" />
+                <input name="contactFacebook" defaultValue={data.settings.contactFacebook} className={inputClass} />
               </div>
               <div>
                 <label className={labelClass}>✉️ Email</label>
-                <input name="contactEmail" defaultValue={data.settings.contactEmail} className={inputClass} placeholder="wedding@example.com" />
+                <input name="contactEmail" defaultValue={data.settings.contactEmail} className={inputClass} />
               </div>
               <motion.button
                 type="submit"
-                className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 shadow-surface"
+                className={saveBtn}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -610,6 +763,43 @@ export default function AdminDashboard() {
             </form>
           </div>
         )}
+
+        {/* MUSIC TAB */}
+        {tab === 'music' && (
+          <div className={sectionCard}>
+            <h3 className="font-display text-lg font-semibold text-foreground">🎵 Background Music</h3>
+            <p className="text-sm text-muted-foreground">Set the background music URL. Supports MP3 links.</p>
+            <form onSubmit={e => {
+              e.preventDefault();
+              const fd = new FormData(e.target as HTMLFormElement);
+              data.updateSettings({ musicUrl: fd.get('musicUrl') as string });
+              toast.success('Music URL saved!');
+            }} className="space-y-4">
+              <div>
+                <label className={labelClass}>Music URL (MP3)</label>
+                <input name="musicUrl" defaultValue={data.settings.musicUrl} className={inputClass} placeholder="https://example.com/romantic-song.mp3" />
+                <p className="text-xs text-muted-foreground mt-1">Paste a direct link to an MP3 file. The music will play when guests toggle the 🎵 button.</p>
+              </div>
+              {data.settings.musicUrl && (
+                <div>
+                  <label className={labelClass}>Preview</label>
+                  <audio controls src={data.settings.musicUrl} className="w-full rounded-xl" />
+                </div>
+              )}
+              <motion.button
+                type="submit"
+                className={saveBtn}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                💾 Save Music
+              </motion.button>
+            </form>
+          </div>
+        )}
+
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );

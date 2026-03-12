@@ -26,17 +26,23 @@ export default function MapSection() {
         </h2>
         <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
 
-        <div className="rounded-2xl overflow-hidden shadow-surface border border-border mb-6">
-          <iframe
-            src={settings.mapEmbedUrl}
-            width="100%"
-            height="300"
-            style={{ border: 0 }}
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            title="Wedding venue location"
-          />
+        <div className="glass-card rounded-2xl overflow-hidden mb-6">
+          {settings.mapEmbedUrl ? (
+            <iframe
+              src={settings.mapEmbedUrl}
+              width="100%"
+              height="300"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Wedding venue location"
+            />
+          ) : (
+            <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+              <p>📍 Map not configured yet</p>
+            </div>
+          )}
         </div>
 
         <motion.a
