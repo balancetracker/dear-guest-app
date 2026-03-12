@@ -11,10 +11,10 @@ export default function ContactSection() {
   const { settings } = useWeddingData();
 
   const contacts = [
-    { icon: '📱', label: 'Telegram', href: settings.contactTelegram, color: 'bg-blue-50' },
-    { icon: '📞', label: 'Phone', href: `tel:${settings.contactPhone}`, color: 'bg-green-50' },
-    { icon: '📘', label: 'Facebook', href: settings.contactFacebook, color: 'bg-indigo-50' },
-    { icon: '✉️', label: 'Email', href: `mailto:${settings.contactEmail}`, color: 'bg-pink-50' },
+    { icon: '📱', label: 'Telegram', href: settings.contactTelegram },
+    { icon: '📞', label: 'Phone', href: `tel:${settings.contactPhone}` },
+    { icon: '📘', label: 'Facebook', href: settings.contactFacebook },
+    { icon: '✉️', label: 'Email', href: `mailto:${settings.contactEmail}` },
   ];
 
   return (
@@ -38,12 +38,12 @@ export default function ContactSection() {
               href={c.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-card rounded-2xl p-5 shadow-surface border border-border flex flex-col items-center gap-2 hover:shadow-lg transition-shadow"
+              className="glass-card rounded-2xl p-5 flex flex-col items-center gap-2 hover:shadow-lg transition-all"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ ...spring, delay: i * 0.1 }}
-              whileHover={{ scale: 1.03 }}
+              whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.97 }}
             >
               <span className="text-3xl">{c.icon}</span>

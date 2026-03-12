@@ -23,7 +23,7 @@ export default function GiftSection() {
 
   return (
     <motion.section
-      className="py-24 px-6 bg-card"
+      className="py-24 px-6 bg-card/50"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -35,20 +35,24 @@ export default function GiftSection() {
         </h2>
         <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
 
-        <div className="bg-background rounded-2xl p-6 shadow-surface border border-border mb-6">
+        <motion.div
+          className="glass-card rounded-3xl p-8 mb-6"
+          whileHover={{ scale: 1.01 }}
+        >
           <div className="text-4xl mb-4">🎁</div>
           
-          {/* Bank QR Image */}
           {bankQR && (
-            <div className="mb-4">
-              <img src={bankQR} alt="Bank QR Code" className="w-48 h-48 object-contain mx-auto rounded-xl" />
+            <div className="mb-6">
+              <img src={bankQR} alt="Bank QR Code" className="w-56 h-56 object-contain mx-auto rounded-2xl shadow-surface" />
             </div>
           )}
 
           <p className={`text-sm text-muted-foreground mb-1 ${fontClass}`}>{t('gift.bank')}</p>
-          <p className="text-lg font-semibold text-foreground">{bankName}</p>
-          <p className="text-2xl font-display font-bold text-foreground mt-2 tracking-wider">{bankAccount}</p>
-        </div>
+          <p className="text-xl font-semibold text-foreground">{bankName}</p>
+          <div className="mt-3 bg-background/50 rounded-xl py-3 px-4 inline-block">
+            <p className="text-2xl font-display font-bold text-foreground tracking-wider">{bankAccount}</p>
+          </div>
+        </motion.div>
 
         <motion.button
           onClick={copyAccount}

@@ -38,7 +38,7 @@ export default function DetailsSection() {
 
   return (
     <motion.section
-      className="py-24 px-6 bg-card"
+      className="py-24 px-6"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
@@ -50,19 +50,27 @@ export default function DetailsSection() {
         </h2>
         <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
 
-        <div className="grid grid-cols-1 gap-6 mb-10">
-          <div className="bg-background rounded-2xl p-6 shadow-surface border border-border">
-            <p className={`text-sm text-muted-foreground ${fontClass}`}>{t('details.date')}</p>
-            <p className={`text-lg font-semibold text-foreground ${fontClass}`}>{dateDisplay}</p>
-          </div>
-          <div className="bg-background rounded-2xl p-6 shadow-surface border border-border">
-            <p className={`text-sm text-muted-foreground ${fontClass}`}>{t('details.time')}</p>
-            <p className={`text-lg font-semibold text-foreground ${fontClass}`}>{timeDisplay}</p>
-          </div>
-          <div className="bg-background rounded-2xl p-6 shadow-surface border border-border">
-            <p className={`text-sm text-muted-foreground ${fontClass}`}>{t('details.venue')}</p>
-            <p className={`text-lg font-semibold text-foreground ${fontClass}`}>{venueDisplay}</p>
-          </div>
+        <div className="grid grid-cols-1 gap-4 mb-10">
+          {[
+            { label: t('details.date'), value: dateDisplay, icon: '📅' },
+            { label: t('details.time'), value: timeDisplay, icon: '🕐' },
+            { label: t('details.venue'), value: venueDisplay, icon: '📍' },
+          ].map((item, i) => (
+            <motion.div
+              key={i}
+              className="glass-card rounded-2xl p-6 flex items-center gap-4"
+              initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ ...spring, delay: i * 0.1 }}
+            >
+              <span className="text-3xl">{item.icon}</span>
+              <div className="text-left">
+                <p className={`text-sm text-muted-foreground ${fontClass}`}>{item.label}</p>
+                <p className={`text-lg font-semibold text-foreground ${fontClass}`}>{item.value}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Countdown */}
@@ -74,10 +82,14 @@ export default function DetailsSection() {
             { val: countdown.minutes, label: t('details.minutes') },
             { val: countdown.seconds, label: t('details.seconds') },
           ].map(({ val, label }) => (
-            <div key={label} className="bg-background rounded-2xl p-4 shadow-surface border border-border">
+            <motion.div
+              key={label}
+              className="glass-card rounded-2xl p-4"
+              whileHover={{ scale: 1.05 }}
+            >
               <div className="text-3xl font-display font-bold text-foreground">{val}</div>
               <div className={`text-xs text-muted-foreground mt-1 ${fontClass}`}>{label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
 

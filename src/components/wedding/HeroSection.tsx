@@ -13,6 +13,7 @@ export default function HeroSection() {
 
   const names = lang === 'km' ? settings.coupleNamesKm : settings.coupleNames;
   const date = lang === 'km' ? settings.weddingDateKm : settings.weddingDate;
+  const bgImage = settings.heroImage || heroBg;
 
   return (
     <motion.section
@@ -21,10 +22,9 @@ export default function HeroSection() {
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
     >
-      {/* Background */}
       <div className="absolute inset-0">
-        <img src={heroBg} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-background/60" />
+        <img src={bgImage} alt="" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/60 to-background/80" />
       </div>
 
       <div className="relative z-10 px-6 max-w-lg">
@@ -65,7 +65,6 @@ export default function HeroSection() {
           {date}
         </motion.p>
 
-        {/* Ring sparkle */}
         <motion.div
           className="mt-8 text-4xl"
           initial={{ scale: 0 }}
