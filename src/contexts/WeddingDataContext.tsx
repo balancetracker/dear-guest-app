@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface Guest {
   id: string;
@@ -59,10 +60,6 @@ interface WeddingData {
 
 const WeddingDataContext = createContext<WeddingData | null>(null);
 
-const STORAGE_KEY = 'wedding_data';
-const BLOB_DB_NAME = 'wedding_blobs';
-const BLOB_STORE = 'blobs';
-
 const defaultSettings: WeddingSettings = {
   coupleNames: 'Dara & Sophea',
   coupleNamesKm: 'តារា & សុភា',
@@ -73,180 +70,243 @@ const defaultSettings: WeddingSettings = {
   venueName: 'The Grand Palace Hotel',
   venueNameKm: 'សណ្ឋាគារ ព្រះបរមរាជវាំង',
   weddingDateTime: '2026-12-20T11:30:00',
-  calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Dara+%26+Sophea&dates=20261220T043000Z/20261220T120000Z&details=Wedding+Ceremony&location=The+Grand+Palace+Hotel',
+  calendarUrl: '',
   mapLat: '11.5564',
   mapLng: '104.9282',
-  mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.7!2d104.9282!3d11.5564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDMzJzIzLjAiTiAxMDTCsDU1JzQxLjUiRQ!5e0!3m2!1sen!2skh!4v1',
-  contactTelegram: 'https://t.me/',
-  contactPhone: '+85512345678',
-  contactFacebook: 'https://facebook.com/',
-  contactEmail: 'wedding@example.com',
-  musicUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  mapEmbedUrl: '',
+  contactTelegram: '',
+  contactPhone: '',
+  contactFacebook: '',
+  contactEmail: '',
+  musicUrl: '',
   musicFile: '',
   heroImage: '',
   weddingDescription: 'We joyfully invite you to celebrate the beginning of our new journey together.',
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
 };
 
-// --- IndexedDB helpers for large binary data ---
-function openBlobDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(BLOB_DB_NAME, 1);
-    req.onupgradeneeded = () => {
-      req.result.createObjectStore(BLOB_STORE);
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
+// Map DB row to app Guest
+function dbToGuest(row: any): Guest {
+  return {
+    id: row.id,
+    name: row.name,
+    rsvpStatus: (row.rsvp_status || 'pending') as Guest['rsvpStatus'],
+    numberOfGuests: row.number_of_guests ?? 1,
+  };
 }
 
-async function saveBlobData(key: string, value: string) {
-  try {
-    const db = await openBlobDB();
-    const tx = db.transaction(BLOB_STORE, 'readwrite');
-    tx.objectStore(BLOB_STORE).put(value, key);
-    await new Promise<void>((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
-    db.close();
-  } catch (e) {
-    console.warn('Failed to save blob to IndexedDB:', e);
-  }
+// Map DB row to app Wish
+function dbToWish(row: any): Wish {
+  return {
+    id: row.id,
+    guestName: row.guest_name,
+    message: row.message || '',
+    timestamp: new Date(row.created_at).getTime(),
+  };
 }
 
-async function loadBlobData(key: string): Promise<string> {
-  try {
-    const db = await openBlobDB();
-    const tx = db.transaction(BLOB_STORE, 'readonly');
-    const req = tx.objectStore(BLOB_STORE).get(key);
-    const result = await new Promise<string>((res, rej) => {
-      req.onsuccess = () => res((req.result as string) || '');
-      req.onerror = () => rej(req.error);
-    });
-    db.close();
-    return result;
-  } catch {
-    return '';
-  }
-}
-
-function isBase64(s: string) {
-  return s.startsWith('data:');
-}
-
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return null;
+// Map DB settings row to app WeddingSettings + bank info
+function dbToSettings(row: any): { settings: WeddingSettings; bankName: string; bankAccount: string; bankQR: string } {
+  return {
+    settings: {
+      coupleNames: row.couple_names || defaultSettings.coupleNames,
+      coupleNamesKm: row.couple_names_km || defaultSettings.coupleNamesKm,
+      weddingDate: row.wedding_date || defaultSettings.weddingDate,
+      weddingDateKm: row.wedding_date_km || defaultSettings.weddingDateKm,
+      weddingTime: row.wedding_time || defaultSettings.weddingTime,
+      weddingTimeKm: row.wedding_time_km || defaultSettings.weddingTimeKm,
+      venueName: row.venue || defaultSettings.venueName,
+      venueNameKm: row.venue_km || defaultSettings.venueNameKm,
+      weddingDateTime: row.wedding_date_time || defaultSettings.weddingDateTime,
+      calendarUrl: row.calendar_url || defaultSettings.calendarUrl,
+      mapLat: row.map_lat || defaultSettings.mapLat,
+      mapLng: row.map_lng || defaultSettings.mapLng,
+      mapEmbedUrl: row.map_embed_url || defaultSettings.mapEmbedUrl,
+      contactTelegram: row.contact_telegram || defaultSettings.contactTelegram,
+      contactPhone: row.contact_phone || defaultSettings.contactPhone,
+      contactFacebook: row.contact_facebook || defaultSettings.contactFacebook,
+      contactEmail: row.contact_email || defaultSettings.contactEmail,
+      musicUrl: row.music_url || defaultSettings.musicUrl,
+      musicFile: row.music_file || defaultSettings.musicFile,
+      heroImage: row.hero_image || defaultSettings.heroImage,
+      weddingDescription: row.wedding_description || defaultSettings.weddingDescription,
+      weddingDescriptionKm: row.wedding_description_km || defaultSettings.weddingDescriptionKm,
+    },
+    bankName: row.gift_bank_name || 'ABA Bank',
+    bankAccount: row.gift_bank_account || '001 234 567',
+    bankQR: row.gift_qr_code || '',
+  };
 }
 
 export function WeddingDataProvider({ children }: { children: ReactNode }) {
-  const saved = loadData();
-  const [guests, setGuests] = useState<Guest[]>(saved?.guests ?? [
-    { id: '1', name: 'Sokha', rsvpStatus: 'pending', numberOfGuests: 1 },
-    { id: '2', name: 'Vicheka', rsvpStatus: 'pending', numberOfGuests: 1 },
-    { id: '3', name: 'Bopha', rsvpStatus: 'attending', numberOfGuests: 2 },
-  ]);
-  const [wishes, setWishes] = useState<Wish[]>(saved?.wishes ?? [
-    { id: '1', guestName: 'Bopha', message: 'Congratulations! Wishing you a lifetime of love and happiness! 💕', timestamp: Date.now() - 86400000 },
-  ]);
-  const [photos, setPhotos] = useState<string[]>(saved?.photos ?? []);
-  const [bankName, setBankName] = useState(saved?.bankName ?? 'ABA Bank');
-  const [bankAccount, setBankAccount] = useState(saved?.bankAccount ?? '001 234 567');
-  const [bankQR, setBankQR] = useState(saved?.bankQR ?? '');
-  const [settings, setSettings] = useState<WeddingSettings>({ ...defaultSettings, ...saved?.settings });
-  const [blobsLoaded, setBlobsLoaded] = useState(false);
+  const [guests, setGuests] = useState<Guest[]>([]);
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [bankName, setBankName] = useState('ABA Bank');
+  const [bankAccount, setBankAccount] = useState('001 234 567');
+  const [bankQR, setBankQR] = useState('');
+  const [settings, setSettings] = useState<WeddingSettings>(defaultSettings);
+  const [settingsId, setSettingsId] = useState<string | null>(null);
 
-  // Load large blobs from IndexedDB on mount
+  // --- Fetch initial data ---
   useEffect(() => {
-    (async () => {
-      const [musicBlob, heroBlob, qrBlob, photosBlob] = await Promise.all([
-        loadBlobData('musicFile'),
-        loadBlobData('heroImage'),
-        loadBlobData('bankQR'),
-        loadBlobData('photos'),
+    const fetchAll = async () => {
+      const [guestsRes, wishesRes, photosRes, settingsRes] = await Promise.all([
+        supabase.from('guests').select('*').order('created_at', { ascending: true }),
+        supabase.from('wishes').select('*').order('created_at', { ascending: false }),
+        supabase.from('photos').select('*').order('created_at', { ascending: true }),
+        supabase.from('settings').select('*').limit(1).single(),
       ]);
-      if (musicBlob) setSettings(prev => ({ ...prev, musicFile: musicBlob }));
-      if (heroBlob) setSettings(prev => ({ ...prev, heroImage: heroBlob }));
-      if (qrBlob) setBankQR(qrBlob);
-      if (photosBlob) {
-        try {
-          const parsed = JSON.parse(photosBlob);
-          if (Array.isArray(parsed) && parsed.length > 0) setPhotos(parsed);
-        } catch {}
+
+      if (guestsRes.data) setGuests(guestsRes.data.map(dbToGuest));
+      if (wishesRes.data) setWishes(wishesRes.data.map(dbToWish));
+      if (photosRes.data) setPhotos(photosRes.data.map((p: any) => p.url));
+
+      if (settingsRes.data) {
+        const mapped = dbToSettings(settingsRes.data);
+        setSettings(mapped.settings);
+        setBankName(mapped.bankName);
+        setBankAccount(mapped.bankAccount);
+        setBankQR(mapped.bankQR);
+        setSettingsId(settingsRes.data.id);
       }
-      setBlobsLoaded(true);
-    })();
+    };
+    fetchAll();
   }, []);
 
-  // Save small data to localStorage (exclude large base64 strings)
+  // --- Real-time subscriptions ---
   useEffect(() => {
-    // Filter out base64 photos for localStorage, keep URL-based ones
-    const smallPhotos = photos.filter(p => !isBase64(p));
-    const smallSettings = {
-      ...settings,
-      musicFile: '', // stored in IndexedDB
-      heroImage: isBase64(settings.heroImage) ? '' : settings.heroImage,
+    const channel = supabase
+      .channel('wedding-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setGuests(prev => {
+            if (prev.find(g => g.id === payload.new.id)) return prev;
+            return [...prev, dbToGuest(payload.new)];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setGuests(prev => prev.map(g => g.id === payload.new.id ? dbToGuest(payload.new) : g));
+        } else if (payload.eventType === 'DELETE') {
+          setGuests(prev => prev.filter(g => g.id !== payload.old.id));
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wishes' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setWishes(prev => {
+            if (prev.find(w => w.id === payload.new.id)) return prev;
+            return [dbToWish(payload.new), ...prev];
+          });
+        } else if (payload.eventType === 'DELETE') {
+          setWishes(prev => prev.filter(w => w.id !== payload.old.id));
+        }
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'photos' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setPhotos(prev => {
+            if (prev.includes(payload.new.url)) return prev;
+            return [...prev, payload.new.url];
+          });
+        } else if (payload.eventType === 'DELETE') {
+          setPhotos(prev => prev.filter(p => p !== payload.old.url));
+        }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
+        const mapped = dbToSettings(payload.new);
+        setSettings(mapped.settings);
+        setBankName(mapped.bankName);
+        setBankAccount(mapped.bankAccount);
+        setBankQR(mapped.bankQR);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
-    const smallBankQR = isBase64(bankQR) ? '' : bankQR;
+  }, []);
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        guests, wishes, photos: smallPhotos, bankName, bankAccount, bankQR: smallBankQR, settings: smallSettings,
-      }));
-    } catch (e) {
-      console.warn('localStorage save failed:', e);
+  // --- Mutations ---
+  const addGuest = useCallback(async (name: string) => {
+    await supabase.from('guests').insert({ name, rsvp_status: 'pending', number_of_guests: 1 });
+  }, []);
+
+  const removeGuest = useCallback(async (id: string) => {
+    await supabase.from('guests').delete().eq('id', id);
+  }, []);
+
+  const updateRSVP = useCallback(async (name: string, status: 'attending' | 'not_attending', numGuests: number) => {
+    // Find guest by name (case-insensitive)
+    const { data } = await supabase.from('guests').select('id').ilike('name', name).limit(1).single();
+    if (data) {
+      await supabase.from('guests').update({ rsvp_status: status, number_of_guests: numGuests }).eq('id', data.id);
+    } else {
+      // Guest not found - insert with status
+      await supabase.from('guests').insert({ name, rsvp_status: status, number_of_guests: numGuests });
     }
-  }, [guests, wishes, photos, bankName, bankAccount, bankQR, settings]);
+  }, []);
 
-  // Save large blobs to IndexedDB
-  useEffect(() => {
-    if (!blobsLoaded) return;
-    saveBlobData('musicFile', settings.musicFile);
-  }, [settings.musicFile, blobsLoaded]);
+  const addWish = useCallback(async (guestName: string, message: string) => {
+    await supabase.from('wishes').insert({ guest_name: guestName, message });
+  }, []);
 
-  useEffect(() => {
-    if (!blobsLoaded) return;
-    if (isBase64(settings.heroImage)) {
-      saveBlobData('heroImage', settings.heroImage);
+  const addPhoto = useCallback(async (url: string) => {
+    await supabase.from('photos').insert({ url });
+  }, []);
+
+  const removePhoto = useCallback(async (url: string) => {
+    await supabase.from('photos').delete().eq('url', url);
+  }, []);
+
+  const setBankInfo = useCallback(async (name: string, account: string, qr: string) => {
+    const update = { gift_bank_name: name, gift_bank_account: account, gift_qr_code: qr };
+    if (settingsId) {
+      await supabase.from('settings').update(update).eq('id', settingsId);
+    } else {
+      const { data } = await supabase.from('settings').insert(update as any).select('id').single();
+      if (data) setSettingsId(data.id);
     }
-  }, [settings.heroImage, blobsLoaded]);
-
-  useEffect(() => {
-    if (!blobsLoaded) return;
-    if (isBase64(bankQR)) {
-      saveBlobData('bankQR', bankQR);
-    }
-  }, [bankQR, blobsLoaded]);
-
-  useEffect(() => {
-    if (!blobsLoaded) return;
-    const base64Photos = photos.filter(p => isBase64(p));
-    if (base64Photos.length > 0) {
-      saveBlobData('photos', JSON.stringify(base64Photos));
-    }
-  }, [photos, blobsLoaded]);
-
-  const addGuest = (name: string) => {
-    setGuests(prev => [...prev, { id: crypto.randomUUID(), name, rsvpStatus: 'pending', numberOfGuests: 1 }]);
-  };
-  const removeGuest = (id: string) => setGuests(prev => prev.filter(g => g.id !== id));
-  const updateRSVP = (name: string, status: 'attending' | 'not_attending', numGuests: number) => {
-    setGuests(prev => prev.map(g => g.name.toLowerCase() === name.toLowerCase() ? { ...g, rsvpStatus: status, numberOfGuests: numGuests } : g));
-  };
-  const addWish = (guestName: string, message: string) => {
-    setWishes(prev => [...prev, { id: crypto.randomUUID(), guestName, message, timestamp: Date.now() }]);
-  };
-  const addPhoto = (url: string) => setPhotos(prev => [...prev, url]);
-  const removePhoto = (url: string) => setPhotos(prev => prev.filter(p => p !== url));
-  const setBankInfo = (name: string, account: string, qr: string) => {
+    // Optimistic update
     setBankName(name);
     setBankAccount(account);
     setBankQR(qr);
-  };
-  const updateSettings = useCallback((s: Partial<WeddingSettings>) => {
+  }, [settingsId]);
+
+  const updateSettings = useCallback(async (s: Partial<WeddingSettings>) => {
+    // Map app fields to DB columns
+    const dbUpdate: Record<string, any> = {};
+    if (s.coupleNames !== undefined) dbUpdate.couple_names = s.coupleNames;
+    if (s.coupleNamesKm !== undefined) dbUpdate.couple_names_km = s.coupleNamesKm;
+    if (s.weddingDate !== undefined) dbUpdate.wedding_date = s.weddingDate;
+    if (s.weddingDateKm !== undefined) dbUpdate.wedding_date_km = s.weddingDateKm;
+    if (s.weddingTime !== undefined) dbUpdate.wedding_time = s.weddingTime;
+    if (s.weddingTimeKm !== undefined) dbUpdate.wedding_time_km = s.weddingTimeKm;
+    if (s.venueName !== undefined) dbUpdate.venue = s.venueName;
+    if (s.venueNameKm !== undefined) dbUpdate.venue_km = s.venueNameKm;
+    if (s.weddingDateTime !== undefined) dbUpdate.wedding_date_time = s.weddingDateTime;
+    if (s.calendarUrl !== undefined) dbUpdate.calendar_url = s.calendarUrl;
+    if (s.mapLat !== undefined) dbUpdate.map_lat = s.mapLat;
+    if (s.mapLng !== undefined) dbUpdate.map_lng = s.mapLng;
+    if (s.mapEmbedUrl !== undefined) dbUpdate.map_embed_url = s.mapEmbedUrl;
+    if (s.contactTelegram !== undefined) dbUpdate.contact_telegram = s.contactTelegram;
+    if (s.contactPhone !== undefined) dbUpdate.contact_phone = s.contactPhone;
+    if (s.contactFacebook !== undefined) dbUpdate.contact_facebook = s.contactFacebook;
+    if (s.contactEmail !== undefined) dbUpdate.contact_email = s.contactEmail;
+    if (s.musicUrl !== undefined) dbUpdate.music_url = s.musicUrl;
+    if (s.musicFile !== undefined) dbUpdate.music_file = s.musicFile;
+    if (s.heroImage !== undefined) dbUpdate.hero_image = s.heroImage;
+    if (s.weddingDescription !== undefined) dbUpdate.wedding_description = s.weddingDescription;
+    if (s.weddingDescriptionKm !== undefined) dbUpdate.wedding_description_km = s.weddingDescriptionKm;
+
+    if (Object.keys(dbUpdate).length === 0) return;
+
+    if (settingsId) {
+      await supabase.from('settings').update(dbUpdate).eq('id', settingsId);
+    } else {
+      const { data } = await supabase.from('settings').insert(dbUpdate).select('id').single();
+      if (data) setSettingsId(data.id);
+    }
+    // Optimistic update
     setSettings(prev => ({ ...prev, ...s }));
-  }, []);
+  }, [settingsId]);
 
   return (
     <WeddingDataContext.Provider value={{ guests, wishes, photos, bankName, bankAccount, bankQR, settings, addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings }}>
