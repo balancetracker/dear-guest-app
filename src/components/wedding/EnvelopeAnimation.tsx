@@ -23,14 +23,14 @@ function launchFireworks() {
       angle: 60,
       spread: 55,
       origin: { x: 0, y: 0.7 },
-      colors,
+      colors
     });
     confetti({
       particleCount: 3,
       angle: 120,
       spread: 55,
       origin: { x: 1, y: 0.7 },
-      colors,
+      colors
     });
     if (Date.now() < end) requestAnimationFrame(frame);
   };
@@ -46,12 +46,12 @@ function launchFireworks() {
       startVelocity: 45,
       gravity: 0.8,
       shapes: ['circle', 'square'],
-      scalar: 1.2,
+      scalar: 1.2
     });
   }, 200);
 
   // Star bursts
-  [600, 1200, 1800].forEach(delay => {
+  [600, 1200, 1800].forEach((delay) => {
     setTimeout(() => {
       confetti({
         particleCount: 50,
@@ -60,7 +60,7 @@ function launchFireworks() {
         colors,
         startVelocity: 30,
         gravity: 1,
-        ticks: 80,
+        ticks: 80
       });
     }, delay);
   });
@@ -76,35 +76,35 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
 
   return (
     <AnimatePresence>
-      {!isOpen && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10"
-          exit={{ opacity: 0, scale: 1.1 }}
-          transition={{ duration: 0.6 }}
-        >
+      {!isOpen &&
+      <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10"
+        exit={{ opacity: 0, scale: 1.1 }}
+        transition={{ duration: 0.6 }}>
+        
           {/* Floating daisies in background */}
-          {['🌼', '🌸', '🌺', '💐', '🌷', '✨', '🌼', '🌸'].map((emoji, i) => (
-            <motion.span
-              key={i}
-              className="absolute text-2xl opacity-30 pointer-events-none"
-              style={{
-                top: `${10 + Math.random() * 80}%`,
-                left: `${5 + Math.random() * 90}%`,
-              }}
-              animate={{
-                y: [0, -15, 0],
-                rotate: [0, 10, -10, 0],
-                opacity: [0.2, 0.4, 0.2],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: i * 0.5,
-              }}
-            >
+          {['🌼', '🌸', '🌺', '💐', '🌷', '✨', '🌼', '🌸'].map((emoji, i) =>
+        <motion.span
+          key={i}
+          className="absolute text-2xl opacity-30 pointer-events-none"
+          style={{
+            top: `${10 + Math.random() * 80}%`,
+            left: `${5 + Math.random() * 90}%`
+          }}
+          animate={{
+            y: [0, -15, 0],
+            rotate: [0, 10, -10, 0],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{
+            duration: 3 + Math.random() * 2,
+            repeat: Infinity,
+            delay: i * 0.5
+          }}>
+          
               {emoji}
             </motion.span>
-          ))}
+        )}
 
           {/* Floral corners */}
           <img src={floralCorner} alt="" className="absolute top-0 left-0 w-32 md:w-48 opacity-50 pointer-events-none" />
@@ -113,34 +113,34 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-[-1]" />
 
           <motion.div
-            className="flex flex-col items-center gap-8"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ ...spring, duration: 0.8 }}
-          >
+          className="flex flex-col items-center gap-8"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ ...spring, duration: 0.8 }}>
+          
             {/* Envelope */}
             <motion.div
-              className="relative w-72 h-48 md:w-96 md:h-64 cursor-pointer"
-              whileHover={{ scale: 1.03, y: -5 }}
-              onClick={handleOpen}
-            >
+            className="relative w-72 h-48 md:w-96 md:h-64 cursor-pointer"
+            whileHover={{ scale: 1.03, y: -5 }}
+            onClick={handleOpen}>
+            
               {/* Envelope body */}
               <div className="absolute inset-0 glass-strong rounded-2xl shadow-lg" />
               
               {/* Envelope flap */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-1/2 bg-primary/20 backdrop-blur-sm rounded-t-2xl origin-top"
-                style={{ transformStyle: 'preserve-3d' }}
-                initial={{ rotateX: 0 }}
-                whileHover={{ rotateX: -20 }}
-                transition={spring}
-              >
+              className="absolute top-0 left-0 right-0 h-1/2 bg-primary/20 backdrop-blur-sm rounded-t-2xl origin-top"
+              style={{ transformStyle: 'preserve-3d' }}
+              initial={{ rotateX: 0 }}
+              whileHover={{ rotateX: -20 }}
+              transition={spring}>
+              
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.span
-                    className="text-3xl"
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
+                  className="text-3xl"
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}>
+                  
                     💌
                   </motion.span>
                 </div>
@@ -153,10 +153,10 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
                   {guestName || t('greeting.guest')}
                 </p>
                 <motion.div
-                  className="mt-2 text-xl"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
+                className="mt-2 text-xl"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}>
+                
                   💕
                 </motion.div>
               </div>
@@ -164,18 +164,18 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
 
             {/* Open button */}
             <motion.button
-              onClick={handleOpen}
-              className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-8 py-3 font-display text-lg shadow-lg hover:shadow-xl transition-shadow"
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.97 }}
-              transition={spring}
-              animate={{ y: [0, -3, 0] }}
-            >
+            onClick={handleOpen}
+            className="min-h-[48px] px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-shadow bg-primary text-slate-800 font-sans rounded-sm"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            transition={spring}
+            animate={{ y: [0, -3, 0] }}>
+            
               ✨ {t('hero.open')}
             </motion.button>
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
-  );
+      }
+    </AnimatePresence>);
+
 }
