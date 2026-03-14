@@ -33,6 +33,7 @@ export interface WeddingSettings {
   contactFacebook: string;
   contactEmail: string;
   musicUrl: string;
+  musicFile: string;
   heroImage: string;
   weddingDescription: string;
   weddingDescriptionKm: string;
