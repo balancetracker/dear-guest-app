@@ -67,7 +67,7 @@ function launchFireworks() {
 }
 
 export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: EnvelopeProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const handleOpen = useCallback(() => {
     launchFireworks();
