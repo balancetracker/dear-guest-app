@@ -9,31 +9,42 @@ const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
 type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts' | 'music';
 
-function ImageUpload({ onUpload, label, current, accept }: {
-  onUpload: (dataUrl: string) => void;
+function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
+  onUpload: (url: string) => void;
   label: string;
   current?: string;
   accept?: string;
+  bucket: string;
+  maxSize?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files?.length) return;
     const file = files[0];
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large (max 5MB)');
+    const limit = maxSize || 5 * 1024 * 1024;
+    if (file.size > limit) {
+      toast.error(`File too large (max ${Math.round(limit / 1024 / 1024)}MB)`);
       return;
     }
-    const base64 = await fileToBase64(file);
-    onUpload(base64);
-    toast.success('Image uploaded!');
-  }, [onUpload]);
+    setUploading(true);
+    try {
+      const url = await uploadFile(bucket, file);
+      onUpload(url);
+      toast.success('Uploaded!');
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  }, [onUpload, bucket, maxSize]);
 
   return (
     <div
       className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
-        dragOver ? 'border-accent bg-accent/10' : 'border-border hover:border-accent/50'
+        uploading ? 'border-accent/50 opacity-60 pointer-events-none' : dragOver ? 'border-accent bg-accent/10' : 'border-border hover:border-accent/50'
       }`}
       onClick={() => inputRef.current?.click()}
       onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -47,7 +58,12 @@ function ImageUpload({ onUpload, label, current, accept }: {
         className="hidden"
         onChange={e => handleFiles(e.target.files)}
       />
-      {current ? (
+      {uploading ? (
+        <div className="space-y-2">
+          <div className="text-3xl animate-pulse">⏳</div>
+          <p className="text-sm font-medium text-foreground">Uploading...</p>
+        </div>
+      ) : current ? (
         <div className="space-y-3">
           <img src={current} alt="" className="w-32 h-32 object-cover mx-auto rounded-xl" />
           <p className="text-xs text-muted-foreground">Click or drag to replace</p>
@@ -56,7 +72,7 @@ function ImageUpload({ onUpload, label, current, accept }: {
         <div className="space-y-2">
           <div className="text-3xl">📷</div>
           <p className="text-sm font-medium text-foreground">{label}</p>
-          <p className="text-xs text-muted-foreground">Click or drag & drop • Max 5MB</p>
+          <p className="text-xs text-muted-foreground">Click or drag & drop • Max {Math.round((maxSize || 5 * 1024 * 1024) / 1024 / 1024)}MB</p>
         </div>
       )}
     </div>
