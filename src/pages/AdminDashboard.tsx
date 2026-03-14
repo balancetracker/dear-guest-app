@@ -520,7 +520,8 @@ export default function AdminDashboard() {
                 <ImageUpload
                   label="Upload hero background photo"
                   current={data.settings.heroImage || undefined}
-                  onUpload={(base64) => data.updateSettings({ heroImage: base64 })}
+                  bucket="photos"
+                  onUpload={(url) => data.updateSettings({ heroImage: url })}
                 />
                 {data.settings.heroImage && (
                   <button
