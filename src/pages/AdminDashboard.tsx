@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
@@ -80,8 +81,6 @@ function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
 }
 
 export default function AdminDashboard() {
-  const [authed, setAuthed] = useState(false);
-  const [password, setPassword] = useState('');
   const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
   const [newGuest, setNewGuest] = useState('');
@@ -89,48 +88,9 @@ export default function AdminDashboard() {
 
   const baseUrl = window.location.origin;
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'wedding2025') {
-      setAuthed(true);
-    } else {
-      toast.error('Incorrect password');
-    }
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
-
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <motion.div
-          className="glass-strong rounded-3xl p-8 w-full max-w-sm text-center"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={spring}
-        >
-          <div className="text-4xl mb-4">💍</div>
-          <h1 className="font-display text-2xl font-semibold text-foreground mb-6">Admin Login</h1>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Password"
-              className="w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            />
-            <motion.button
-              type="submit"
-              className="w-full bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 font-display shadow-surface"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Login
-            </motion.button>
-          </form>
-          <p className="text-xs text-muted-foreground mt-4">Demo: wedding2025</p>
-        </motion.div>
-      </div>
-    );
-  }
 
   const addGuest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +155,7 @@ export default function AdminDashboard() {
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
           <a href="/" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
-          <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
         </div>
