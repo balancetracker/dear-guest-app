@@ -78,7 +78,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
     <AnimatePresence>
       {!isOpen &&
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10 text-accent bg-destructive"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background/95 to-primary/20"
         exit={{ opacity: 0, scale: 1.1 }}
         transition={{ duration: 0.6 }}>
         
@@ -86,7 +86,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           {['🌼', '🌸', '🌺', '💐', '🌷', '✨', '🌼', '🌸'].map((emoji, i) =>
         <motion.span
           key={i}
-          className="absolute text-2xl opacity-30 pointer-events-none"
+          className="absolute text-2xl opacity-20 pointer-events-none"
           style={{
             top: `${10 + Math.random() * 80}%`,
             left: `${5 + Math.random() * 90}%`
@@ -94,26 +94,25 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           animate={{
             y: [0, -15, 0],
             rotate: [0, 10, -10, 0],
-            opacity: [0.2, 0.4, 0.2]
+            opacity: [0.15, 0.3, 0.15]
           }}
           transition={{
             duration: 3 + Math.random() * 2,
             repeat: Infinity,
             delay: i * 0.5
           }}>
-          
               {emoji}
             </motion.span>
         )}
 
           {/* Floral corners */}
-          <img src={floralCorner} alt="" className="absolute top-0 left-0 w-32 md:w-48 opacity-50 pointer-events-none" />
-          <img src={floralCorner} alt="" className="absolute top-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-x-[-1]" />
-          <img src={floralCorner} alt="" className="absolute bottom-0 left-0 w-32 md:w-48 opacity-50 pointer-events-none scale-y-[-1]" />
-          <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-[-1]" />
+          <img src={floralCorner} alt="" className="absolute top-0 left-0 w-32 md:w-48 opacity-40 pointer-events-none" />
+          <img src={floralCorner} alt="" className="absolute top-0 right-0 w-32 md:w-48 opacity-40 pointer-events-none scale-x-[-1]" />
+          <img src={floralCorner} alt="" className="absolute bottom-0 left-0 w-32 md:w-48 opacity-40 pointer-events-none scale-y-[-1]" />
+          <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-32 md:w-48 opacity-40 pointer-events-none scale-[-1]" />
 
           <motion.div
-          className="items-center justify-start flex flex-col mx-[10px] my-[10px] pl-0 gap-0 bg-primary text-primary border-solid shadow"
+          className="flex flex-col items-center gap-6"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ ...spring, duration: 0.8 }}>
@@ -124,30 +123,28 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             whileHover={{ scale: 1.03, y: -5 }}
             onClick={handleOpen}>
             
-              {/* Envelope body */}
-              <div className="absolute inset-0 glass-strong text-primary rounded-lg bg-primary border-2 shadow-2xl" />
+              {/* Envelope body - soft cream/blush */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/30 to-primary/50 border border-primary/20 shadow-xl" />
               
               {/* Envelope flap */}
               <motion.div
-              className="absolute top-0 left-0 right-0 h-1/2 bg-primary/20 backdrop-blur-sm rounded-t-2xl origin-top"
+              className="absolute top-0 left-0 right-0 h-1/2 rounded-t-2xl origin-top bg-gradient-to-b from-primary/20 to-primary/35 border-b border-primary/15"
               style={{ transformStyle: 'preserve-3d' }}
               initial={{ rotateX: 0 }}
               whileHover={{ rotateX: -20 }}
               transition={spring}>
-              
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.span
                   className="text-3xl"
                   animate={{ y: [0, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}>
-                  
                     💌
                   </motion.span>
                 </div>
               </motion.div>
 
               {/* Card inside */}
-              <div className="absolute inset-4 top-8 bg-card/80 backdrop-blur-sm rounded-xl border border-border/30 flex flex-col items-center justify-center p-4 text-center">
+              <div className="absolute inset-4 top-8 bg-card/95 backdrop-blur-sm rounded-xl border border-border/20 shadow-inner flex flex-col items-center justify-center p-4 text-center">
                 <p className="text-sm text-muted-foreground font-khmer">{t('envelope.to')}</p>
                 <p className="font-display text-2xl md:text-3xl font-semibold text-foreground mt-1">
                   {guestName || t('greeting.guest')}
@@ -156,7 +153,6 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
                 className="mt-2 text-xl"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}>
-                
                   💕
                 </motion.div>
               </div>
@@ -165,12 +161,11 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             {/* Open button */}
             <motion.button
             onClick={handleOpen}
-            className="min-h-[48px] px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-shadow bg-primary text-slate-800 font-sans rounded-sm"
+            className="min-h-[48px] px-10 py-3 text-lg font-medium font-khmer rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover:shadow-xl transition-all border border-primary/30"
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={spring}
             animate={{ y: [0, -3, 0] }}>
-            
               ✨ {t('hero.open')}
             </motion.button>
           </motion.div>
