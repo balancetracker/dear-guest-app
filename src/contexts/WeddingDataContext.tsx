@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 
 export interface Guest {
   id: string;
@@ -60,6 +60,8 @@ interface WeddingData {
 const WeddingDataContext = createContext<WeddingData | null>(null);
 
 const STORAGE_KEY = 'wedding_data';
+const BLOB_DB_NAME = 'wedding_blobs';
+const BLOB_STORE = 'blobs';
 
 const defaultSettings: WeddingSettings = {
   coupleNames: 'Dara & Sophea',
@@ -86,6 +88,50 @@ const defaultSettings: WeddingSettings = {
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
 };
 
+// --- IndexedDB helpers for large binary data ---
+function openBlobDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(BLOB_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(BLOB_STORE);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveBlobData(key: string, value: string) {
+  try {
+    const db = await openBlobDB();
+    const tx = db.transaction(BLOB_STORE, 'readwrite');
+    tx.objectStore(BLOB_STORE).put(value, key);
+    await new Promise<void>((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); });
+    db.close();
+  } catch (e) {
+    console.warn('Failed to save blob to IndexedDB:', e);
+  }
+}
+
+async function loadBlobData(key: string): Promise<string> {
+  try {
+    const db = await openBlobDB();
+    const tx = db.transaction(BLOB_STORE, 'readonly');
+    const req = tx.objectStore(BLOB_STORE).get(key);
+    const result = await new Promise<string>((res, rej) => {
+      req.onsuccess = () => res((req.result as string) || '');
+      req.onerror = () => rej(req.error);
+    });
+    db.close();
+    return result;
+  } catch {
+    return '';
+  }
+}
+
+function isBase64(s: string) {
+  return s.startsWith('data:');
+}
+
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -109,10 +155,77 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   const [bankAccount, setBankAccount] = useState(saved?.bankAccount ?? '001 234 567');
   const [bankQR, setBankQR] = useState(saved?.bankQR ?? '');
   const [settings, setSettings] = useState<WeddingSettings>({ ...defaultSettings, ...saved?.settings });
+  const [blobsLoaded, setBlobsLoaded] = useState(false);
+
+  // Load large blobs from IndexedDB on mount
+  useEffect(() => {
+    (async () => {
+      const [musicBlob, heroBlob, qrBlob, photosBlob] = await Promise.all([
+        loadBlobData('musicFile'),
+        loadBlobData('heroImage'),
+        loadBlobData('bankQR'),
+        loadBlobData('photos'),
+      ]);
+      if (musicBlob) setSettings(prev => ({ ...prev, musicFile: musicBlob }));
+      if (heroBlob) setSettings(prev => ({ ...prev, heroImage: heroBlob }));
+      if (qrBlob) setBankQR(qrBlob);
+      if (photosBlob) {
+        try {
+          const parsed = JSON.parse(photosBlob);
+          if (Array.isArray(parsed) && parsed.length > 0) setPhotos(parsed);
+        } catch {}
+      }
+      setBlobsLoaded(true);
+    })();
+  }, []);
+
+  // Save small data to localStorage (exclude large base64 strings)
+  useEffect(() => {
+    // Filter out base64 photos for localStorage, keep URL-based ones
+    const smallPhotos = photos.filter(p => !isBase64(p));
+    const smallSettings = {
+      ...settings,
+      musicFile: '', // stored in IndexedDB
+      heroImage: isBase64(settings.heroImage) ? '' : settings.heroImage,
+    };
+    const smallBankQR = isBase64(bankQR) ? '' : bankQR;
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        guests, wishes, photos: smallPhotos, bankName, bankAccount, bankQR: smallBankQR, settings: smallSettings,
+      }));
+    } catch (e) {
+      console.warn('localStorage save failed:', e);
+    }
+  }, [guests, wishes, photos, bankName, bankAccount, bankQR, settings]);
+
+  // Save large blobs to IndexedDB
+  useEffect(() => {
+    if (!blobsLoaded) return;
+    saveBlobData('musicFile', settings.musicFile);
+  }, [settings.musicFile, blobsLoaded]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ guests, wishes, photos, bankName, bankAccount, bankQR, settings }));
-  }, [guests, wishes, photos, bankName, bankAccount, bankQR, settings]);
+    if (!blobsLoaded) return;
+    if (isBase64(settings.heroImage)) {
+      saveBlobData('heroImage', settings.heroImage);
+    }
+  }, [settings.heroImage, blobsLoaded]);
+
+  useEffect(() => {
+    if (!blobsLoaded) return;
+    if (isBase64(bankQR)) {
+      saveBlobData('bankQR', bankQR);
+    }
+  }, [bankQR, blobsLoaded]);
+
+  useEffect(() => {
+    if (!blobsLoaded) return;
+    const base64Photos = photos.filter(p => isBase64(p));
+    if (base64Photos.length > 0) {
+      saveBlobData('photos', JSON.stringify(base64Photos));
+    }
+  }, [photos, blobsLoaded]);
 
   const addGuest = (name: string) => {
     setGuests(prev => [...prev, { id: crypto.randomUUID(), name, rsvpStatus: 'pending', numberOfGuests: 1 }]);
@@ -131,9 +244,9 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
     setBankAccount(account);
     setBankQR(qr);
   };
-  const updateSettings = (s: Partial<WeddingSettings>) => {
+  const updateSettings = useCallback((s: Partial<WeddingSettings>) => {
     setSettings(prev => ({ ...prev, ...s }));
-  };
+  }, []);
 
   return (
     <WeddingDataContext.Provider value={{ guests, wishes, photos, bankName, bankAccount, bankQR, settings, addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings }}>
