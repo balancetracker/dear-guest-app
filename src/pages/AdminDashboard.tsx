@@ -3,19 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { toast } from 'sonner';
+import { uploadFile } from '@/lib/supabase-storage';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
 type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts' | 'music';
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 function ImageUpload({ onUpload, label, current, accept }: {
   onUpload: (dataUrl: string) => void;
