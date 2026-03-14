@@ -11,7 +11,7 @@ interface LanguageContextType {
 const translations: Record<string, Record<Lang, string>> = {
   'hero.names': { en: 'Dara & Sophea', km: 'តារា & សុភា' },
   'hero.date': { en: 'Saturday, 14 December 2025', km: 'ថ្ងៃសៅរ៍ ១៤ ខែធ្នូ ២០២៥' },
-  'hero.open': { en: 'Open Invitation', km: 'បើកអាម៉ង់' },
+  'hero.open': { en: 'Open Invitation', km: 'បើកសំបុត្រអញ្ជើញ' },
   'greeting.dear': { en: 'Dear', km: 'ជូនចំពោះ' },
   'greeting.message': { en: 'You are warmly invited to celebrate our wedding.', km: 'សូមអញ្ជើញចូលរួមអបអរសាទរពិធីមង្គលការរបស់យើង។' },
   'greeting.guest': { en: 'Honored Guest', km: 'ភ្ញៀវកិត្តិយស' },
