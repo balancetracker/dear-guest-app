@@ -63,8 +63,8 @@ const STORAGE_KEY = 'wedding_data';
 const defaultSettings: WeddingSettings = {
   coupleNames: 'Dara & Sophea',
   coupleNamesKm: 'តារា & សុភា',
-  weddingDate: 'Saturday, 14 December 2025',
-  weddingDateKm: 'ថ្ងៃសៅរ៍ ១៤ ខែធ្នូ ២០២៥',
+  weddingDate: 'Saturday, 20 December 2026',
+  weddingDateKm: 'ថ្ងៃសៅរ៍ ២០ ខែធ្នូ ២០២៦',
   weddingTime: '11:30 AM',
   weddingTimeKm: '១១:៣០ ព្រឹក',
   venueName: 'The Grand Palace Hotel',
