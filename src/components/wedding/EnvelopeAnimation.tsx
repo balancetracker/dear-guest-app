@@ -149,7 +149,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
               {/* Card inside */}
               <div className="absolute inset-4 top-8 bg-card/80 backdrop-blur-sm rounded-xl border border-border/30 flex flex-col items-center justify-center p-4 text-center">
                 <p className="text-sm text-muted-foreground font-khmer">{t('envelope.to')}</p>
-                <p className="font-display text-2xl md:text-3xl font-semibold text-foreground mt-1">
+                <p className="font-khmer text-2xl md:text-3xl font-semibold text-foreground mt-1">
                   {guestName || t('greeting.guest')}
                 </p>
                 <motion.div
