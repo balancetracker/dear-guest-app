@@ -33,13 +33,13 @@ export default function HeroSection() {
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.2 }}
         >
-          <p className={`text-muted-foreground text-sm tracking-widest uppercase mb-4 ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}>
+          <p className={`text-muted-foreground text-sm tracking-widest uppercase mb-6 ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}>
             {lang === 'km' ? 'ពិធីមង្គលការ' : 'We are getting married'}
           </p>
         </motion.div>
 
         <motion.h1
-          className={`text-5xl md:text-7xl font-semibold text-foreground mb-4 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}
+          className={`${lang === 'km' ? 'text-4xl md:text-6xl font-khmer leading-tight' : 'text-5xl md:text-7xl font-display'} font-semibold text-foreground mb-6 leading-tight`}
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.4 }}
@@ -51,13 +51,13 @@ export default function HeroSection() {
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ ...spring, delay: 0.6 }}
-          className="my-6"
+          className="my-8"
         >
           <img src={divider} alt="" className="w-48 mx-auto opacity-70" />
         </motion.div>
 
         <motion.p
-          className={`text-lg text-muted-foreground ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}
+          className={`${lang === 'km' ? 'text-lg md:text-xl font-khmer' : 'text-lg font-sans'} text-muted-foreground`}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.8 }}
@@ -66,7 +66,7 @@ export default function HeroSection() {
         </motion.p>
 
         <motion.div
-          className="mt-8 text-4xl"
+          className="mt-10 text-4xl"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ ...spring, delay: 1 }}
