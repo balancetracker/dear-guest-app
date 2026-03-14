@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { WeddingDataProvider } from "@/contexts/WeddingDataContext";
 import InvitationPage from "./pages/InvitationPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AuthGuard from "./components/AuthGuard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
