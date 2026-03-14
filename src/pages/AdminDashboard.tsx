@@ -447,7 +447,8 @@ export default function AdminDashboard() {
               {/* Upload area */}
               <ImageUpload
                 label="Click to upload a photo"
-                onUpload={(base64) => { data.addPhoto(base64); }}
+                bucket="photos"
+                onUpload={(url) => { data.addPhoto(url); }}
               />
 
               {/* URL input */}
