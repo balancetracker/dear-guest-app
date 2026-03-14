@@ -33,6 +33,7 @@ export interface WeddingSettings {
   contactFacebook: string;
   contactEmail: string;
   musicUrl: string;
+  musicFile: string;
   heroImage: string;
   weddingDescription: string;
   weddingDescriptionKm: string;
@@ -63,14 +64,14 @@ const STORAGE_KEY = 'wedding_data';
 const defaultSettings: WeddingSettings = {
   coupleNames: 'Dara & Sophea',
   coupleNamesKm: 'តារា & សុភា',
-  weddingDate: 'Saturday, 14 December 2025',
-  weddingDateKm: 'ថ្ងៃសៅរ៍ ១៤ ខែធ្នូ ២០២៥',
+  weddingDate: 'Saturday, 20 December 2026',
+  weddingDateKm: 'ថ្ងៃសៅរ៍ ២០ ខែធ្នូ ២០២៦',
   weddingTime: '11:30 AM',
   weddingTimeKm: '១១:៣០ ព្រឹក',
   venueName: 'The Grand Palace Hotel',
   venueNameKm: 'សណ្ឋាគារ ព្រះបរមរាជវាំង',
-  weddingDateTime: '2025-12-14T11:30:00',
-  calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Dara+%26+Sophea&dates=20251214T043000Z/20251214T120000Z&details=Wedding+Ceremony&location=The+Grand+Palace+Hotel',
+  weddingDateTime: '2026-12-20T11:30:00',
+  calendarUrl: 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=Wedding+of+Dara+%26+Sophea&dates=20261220T043000Z/20261220T120000Z&details=Wedding+Ceremony&location=The+Grand+Palace+Hotel',
   mapLat: '11.5564',
   mapLng: '104.9282',
   mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.7!2d104.9282!3d11.5564!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDMzJzIzLjAiTiAxMDTCsDU1JzQxLjUiRQ!5e0!3m2!1sen!2skh!4v1',
@@ -79,6 +80,7 @@ const defaultSettings: WeddingSettings = {
   contactFacebook: 'https://facebook.com/',
   contactEmail: 'wedding@example.com',
   musicUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  musicFile: '',
   heroImage: '',
   weddingDescription: 'We joyfully invite you to celebrate the beginning of our new journey together.',
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',

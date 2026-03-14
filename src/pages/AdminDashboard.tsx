@@ -768,7 +768,56 @@ export default function AdminDashboard() {
         {tab === 'music' && (
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">🎵 Background Music</h3>
-            <p className="text-sm text-muted-foreground">Set the background music URL. Supports MP3 links.</p>
+            <p className="text-sm text-muted-foreground">Upload an MP3 from your device or paste a URL.</p>
+            
+            {/* Upload from device */}
+            <div>
+              <label className={labelClass}>Upload MP3 from device</label>
+              <div
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer border-border hover:border-accent/50`}
+                onClick={() => document.getElementById('music-upload')?.click()}
+              >
+                <input
+                  id="music-upload"
+                  type="file"
+                  accept="audio/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 10 * 1024 * 1024) {
+                      toast.error('File too large (max 10MB)');
+                      return;
+                    }
+                    const base64 = await fileToBase64(file);
+                    data.updateSettings({ musicFile: base64 });
+                    toast.success('Music uploaded! 🎵');
+                  }}
+                />
+                {data.settings.musicFile ? (
+                  <div className="space-y-3">
+                    <div className="text-3xl">🎵</div>
+                    <p className="text-sm font-medium text-foreground">Music file uploaded</p>
+                    <audio controls src={data.settings.musicFile} className="w-full rounded-xl" />
+                    <button
+                      onClick={(e) => { e.stopPropagation(); data.updateSettings({ musicFile: '' }); toast.success('Removed uploaded music'); }}
+                      className="text-xs text-destructive hover:underline"
+                    >
+                      Remove uploaded file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-3xl">🎶</div>
+                    <p className="text-sm font-medium text-foreground">Click to upload MP3</p>
+                    <p className="text-xs text-muted-foreground">Max 10MB • MP3, WAV, M4A</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="text-center text-sm text-muted-foreground">— or —</div>
+
             <form onSubmit={e => {
               e.preventDefault();
               const fd = new FormData(e.target as HTMLFormElement);
@@ -778,9 +827,9 @@ export default function AdminDashboard() {
               <div>
                 <label className={labelClass}>Music URL (MP3)</label>
                 <input name="musicUrl" defaultValue={data.settings.musicUrl} className={inputClass} placeholder="https://example.com/romantic-song.mp3" />
-                <p className="text-xs text-muted-foreground mt-1">Paste a direct link to an MP3 file. The music will play when guests toggle the 🎵 button.</p>
+                <p className="text-xs text-muted-foreground mt-1">Uploaded file takes priority over URL.</p>
               </div>
-              {data.settings.musicUrl && (
+              {data.settings.musicUrl && !data.settings.musicFile && (
                 <div>
                   <label className={labelClass}>Preview</label>
                   <audio controls src={data.settings.musicUrl} className="w-full rounded-xl" />
