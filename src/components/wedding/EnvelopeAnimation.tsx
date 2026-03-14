@@ -113,7 +113,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-[-1]" />
 
           <motion.div
-          className="text-destructive bg-primary-foreground items-center justify-start flex flex-col mx-[10px] my-[10px] pl-0 gap-0 border-dotted"
+          className="items-center justify-start flex flex-col mx-[10px] my-[10px] pl-0 gap-0 border-dotted bg-primary text-primary"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ ...spring, duration: 0.8 }}>
