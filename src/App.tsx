@@ -20,7 +20,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<InvitationPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
