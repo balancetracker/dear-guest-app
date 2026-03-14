@@ -6,19 +6,27 @@ import divider from '@/assets/divider.png';
 
 const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
 
+const defaultPhotos = [
+  'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&h=500&fit=crop',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop',
+  'https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=400&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=500&fit=crop',
+];
+
 export default function GallerySection() {
   const { t, lang } = useLanguage();
   const { photos } = useWeddingData();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const displayPhotos = photos.length > 0 ? photos : [
-    'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=500&fit=crop',
-    'https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&h=500&fit=crop',
-    'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&h=500&fit=crop',
-    'https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=300&fit=crop',
-  ];
+  const displayPhotos = photos.length > 0 ? photos : defaultPhotos;
 
   const navigateLightbox = (dir: number) => {
     if (lightboxIndex === null) return;
@@ -28,19 +36,23 @@ export default function GallerySection() {
 
   return (
     <motion.section
-      className="py-24 px-6 bg-card/50"
+      className="py-24 px-6 relative"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.1 }}
       transition={spring}
     >
-      <div className="max-w-4xl mx-auto text-center">
+      {/* Glass background overlay */}
+      <div className="absolute inset-0 bg-card/30 backdrop-blur-[2px]" />
+
+      <div className="max-w-5xl mx-auto text-center relative z-10">
         <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('gallery.title')}
         </h2>
+        <p className="text-muted-foreground mb-2">🌸 Our Beautiful Moments 🌸</p>
         <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
 
-        <div className="columns-2 md:columns-3 gap-3 space-y-3">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
           {displayPhotos.map((photo, i) => (
             <motion.div
               key={i}
@@ -48,7 +60,7 @@ export default function GallerySection() {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ ...spring, delay: i * 0.08 }}
+              transition={{ ...spring, delay: i * 0.05 }}
               onClick={() => setLightboxIndex(i)}
               whileHover={{ scale: 1.02 }}
             >
@@ -66,6 +78,10 @@ export default function GallerySection() {
             </motion.div>
           ))}
         </div>
+
+        <p className="text-sm text-muted-foreground mt-6">
+          🌼 {displayPhotos.length} photos • Tap to view full size
+        </p>
       </div>
 
       {/* Lightbox */}
@@ -91,28 +107,24 @@ export default function GallerySection() {
                 alt=""
                 className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
               />
-              {/* Close */}
               <button
                 onClick={() => setLightboxIndex(null)}
                 className="absolute top-2 right-2 w-10 h-10 rounded-full glass-strong flex items-center justify-center text-foreground text-lg hover:bg-card/90 transition-colors"
               >
                 ✕
               </button>
-              {/* Prev */}
               <button
                 onClick={() => navigateLightbox(-1)}
                 className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-strong flex items-center justify-center text-foreground text-xl hover:bg-card/90 transition-colors"
               >
                 ‹
               </button>
-              {/* Next */}
               <button
                 onClick={() => navigateLightbox(1)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-strong flex items-center justify-center text-foreground text-xl hover:bg-card/90 transition-colors"
               >
                 ›
               </button>
-              {/* Counter */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 glass-strong rounded-full px-4 py-1 text-sm text-foreground">
                 {lightboxIndex + 1} / {displayPhotos.length}
               </div>

@@ -4,6 +4,8 @@ import { LanguageProvider } from '@/contexts/LanguageContext';
 import EnvelopeAnimation from '@/components/wedding/EnvelopeAnimation';
 import FallingPetals from '@/components/wedding/FallingPetals';
 import FloatingHearts from '@/components/wedding/FloatingHearts';
+import FloatingDaisies from '@/components/wedding/FloatingDaisies';
+import SparkleEffect from '@/components/wedding/SparkleEffect';
 import LanguageSwitcher from '@/components/wedding/LanguageSwitcher';
 import MusicToggle from '@/components/wedding/MusicToggle';
 import HeroSection from '@/components/wedding/HeroSection';
@@ -35,6 +37,8 @@ export default function InvitationPage() {
           <>
             <FallingPetals />
             <FloatingHearts />
+            <FloatingDaisies />
+            <SparkleEffect />
             <LanguageSwitcher />
             <MusicToggle />
 

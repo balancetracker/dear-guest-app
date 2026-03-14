@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
+import confetti from 'canvas-confetti';
 import floralCorner from '@/assets/floral-corner.png';
 
 interface EnvelopeProps {
@@ -11,8 +12,67 @@ interface EnvelopeProps {
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
+function launchFireworks() {
+  const duration = 3000;
+  const end = Date.now() + duration;
+  const colors = ['#f9a8d4', '#fbbf24', '#f472b6', '#fb923c', '#a78bfa', '#34d399'];
+
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors,
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors,
+    });
+    if (Date.now() < end) requestAnimationFrame(frame);
+  };
+  frame();
+
+  // Big center burst
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      spread: 100,
+      origin: { y: 0.5 },
+      colors,
+      startVelocity: 45,
+      gravity: 0.8,
+      shapes: ['circle', 'square'],
+      scalar: 1.2,
+    });
+  }, 200);
+
+  // Star bursts
+  [600, 1200, 1800].forEach(delay => {
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        spread: 360,
+        origin: { x: Math.random(), y: Math.random() * 0.5 },
+        colors,
+        startVelocity: 30,
+        gravity: 1,
+        ticks: 80,
+      });
+    }, delay);
+  });
+}
+
 export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: EnvelopeProps) {
   const { t } = useLanguage();
+
+  const handleOpen = useCallback(() => {
+    launchFireworks();
+    onOpen();
+  }, [onOpen]);
 
   return (
     <AnimatePresence>
@@ -22,6 +82,30 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           exit={{ opacity: 0, scale: 1.1 }}
           transition={{ duration: 0.6 }}
         >
+          {/* Floating daisies in background */}
+          {['🌼', '🌸', '🌺', '💐', '🌷', '✨', '🌼', '🌸'].map((emoji, i) => (
+            <motion.span
+              key={i}
+              className="absolute text-2xl opacity-30 pointer-events-none"
+              style={{
+                top: `${10 + Math.random() * 80}%`,
+                left: `${5 + Math.random() * 90}%`,
+              }}
+              animate={{
+                y: [0, -15, 0],
+                rotate: [0, 10, -10, 0],
+                opacity: [0.2, 0.4, 0.2],
+              }}
+              transition={{
+                duration: 3 + Math.random() * 2,
+                repeat: Infinity,
+                delay: i * 0.5,
+              }}
+            >
+              {emoji}
+            </motion.span>
+          ))}
+
           {/* Floral corners */}
           <img src={floralCorner} alt="" className="absolute top-0 left-0 w-32 md:w-48 opacity-50 pointer-events-none" />
           <img src={floralCorner} alt="" className="absolute top-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-x-[-1]" />
@@ -38,7 +122,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             <motion.div
               className="relative w-72 h-48 md:w-96 md:h-64 cursor-pointer"
               whileHover={{ scale: 1.03, y: -5 }}
-              onClick={onOpen}
+              onClick={handleOpen}
             >
               {/* Envelope body */}
               <div className="absolute inset-0 glass-strong rounded-2xl shadow-lg" />
@@ -80,7 +164,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
 
             {/* Open button */}
             <motion.button
-              onClick={onOpen}
+              onClick={handleOpen}
               className="bg-accent text-accent-foreground rounded-full min-h-[48px] px-8 py-3 font-display text-lg shadow-lg hover:shadow-xl transition-shadow"
               whileHover={{ scale: 1.05, y: -2 }}
               whileTap={{ scale: 0.97 }}

@@ -13,13 +13,13 @@ export default function FallingPetals() {
   const [petals, setPetals] = useState<Petal[]>([]);
 
   useEffect(() => {
-    const emojis = ['🌸', '🩷', '💮', '🪷'];
-    const newPetals: Petal[] = Array.from({ length: 20 }, (_, i) => ({
+    const emojis = ['🌸', '🩷', '💮', '🪷', '🌼', '🌺', '🌷', '✿', '❀', '🏵️'];
+    const newPetals: Petal[] = Array.from({ length: 30 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 8,
-      duration: 8 + Math.random() * 8,
-      size: 14 + Math.random() * 10,
+      delay: Math.random() * 10,
+      duration: 8 + Math.random() * 10,
+      size: 12 + Math.random() * 14,
       emoji: emojis[Math.floor(Math.random() * emojis.length)],
     }));
     setPetals(newPetals);
@@ -37,7 +37,7 @@ export default function FallingPetals() {
             animationDuration: `${p.duration}s`,
             fontSize: `${p.size}px`,
             top: '-30px',
-            opacity: 0.7,
+            opacity: 0.6,
           }}
         >
           {p.emoji}
