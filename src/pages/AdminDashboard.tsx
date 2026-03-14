@@ -3,45 +3,48 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { toast } from 'sonner';
+import { uploadFile } from '@/lib/supabase-storage';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
 type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts' | 'music';
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function ImageUpload({ onUpload, label, current, accept }: {
-  onUpload: (dataUrl: string) => void;
+function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
+  onUpload: (url: string) => void;
   label: string;
   current?: string;
   accept?: string;
+  bucket: string;
+  maxSize?: number;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files?.length) return;
     const file = files[0];
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('File too large (max 5MB)');
+    const limit = maxSize || 5 * 1024 * 1024;
+    if (file.size > limit) {
+      toast.error(`File too large (max ${Math.round(limit / 1024 / 1024)}MB)`);
       return;
     }
-    const base64 = await fileToBase64(file);
-    onUpload(base64);
-    toast.success('Image uploaded!');
-  }, [onUpload]);
+    setUploading(true);
+    try {
+      const url = await uploadFile(bucket, file);
+      onUpload(url);
+      toast.success('Uploaded!');
+    } catch (err: any) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  }, [onUpload, bucket, maxSize]);
 
   return (
     <div
       className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-colors cursor-pointer ${
-        dragOver ? 'border-accent bg-accent/10' : 'border-border hover:border-accent/50'
+        uploading ? 'border-accent/50 opacity-60 pointer-events-none' : dragOver ? 'border-accent bg-accent/10' : 'border-border hover:border-accent/50'
       }`}
       onClick={() => inputRef.current?.click()}
       onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -55,7 +58,12 @@ function ImageUpload({ onUpload, label, current, accept }: {
         className="hidden"
         onChange={e => handleFiles(e.target.files)}
       />
-      {current ? (
+      {uploading ? (
+        <div className="space-y-2">
+          <div className="text-3xl animate-pulse">⏳</div>
+          <p className="text-sm font-medium text-foreground">Uploading...</p>
+        </div>
+      ) : current ? (
         <div className="space-y-3">
           <img src={current} alt="" className="w-32 h-32 object-cover mx-auto rounded-xl" />
           <p className="text-xs text-muted-foreground">Click or drag to replace</p>
@@ -64,7 +72,7 @@ function ImageUpload({ onUpload, label, current, accept }: {
         <div className="space-y-2">
           <div className="text-3xl">📷</div>
           <p className="text-sm font-medium text-foreground">{label}</p>
-          <p className="text-xs text-muted-foreground">Click or drag & drop • Max 5MB</p>
+          <p className="text-xs text-muted-foreground">Click or drag & drop • Max {Math.round((maxSize || 5 * 1024 * 1024) / 1024 / 1024)}MB</p>
         </div>
       )}
     </div>
@@ -439,7 +447,8 @@ export default function AdminDashboard() {
               {/* Upload area */}
               <ImageUpload
                 label="Click to upload a photo"
-                onUpload={(base64) => { data.addPhoto(base64); }}
+                bucket="photos"
+                onUpload={(url) => { data.addPhoto(url); }}
               />
 
               {/* URL input */}
@@ -511,7 +520,8 @@ export default function AdminDashboard() {
                 <ImageUpload
                   label="Upload hero background photo"
                   current={data.settings.heroImage || undefined}
-                  onUpload={(base64) => data.updateSettings({ heroImage: base64 })}
+                  bucket="photos"
+                  onUpload={(url) => data.updateSettings({ heroImage: url })}
                 />
                 {data.settings.heroImage && (
                   <button
@@ -679,7 +689,8 @@ export default function AdminDashboard() {
               <ImageUpload
                 label="Upload bank QR code"
                 current={data.bankQR || undefined}
-                onUpload={(base64) => data.setBankInfo(data.bankName, data.bankAccount, base64)}
+                bucket="photos"
+                onUpload={(url) => data.setBankInfo(data.bankName, data.bankAccount, url)}
               />
               {data.bankQR && (
                 <button
@@ -789,9 +800,13 @@ export default function AdminDashboard() {
                       toast.error('File too large (max 10MB)');
                       return;
                     }
-                    const base64 = await fileToBase64(file);
-                    data.updateSettings({ musicFile: base64 });
-                    toast.success('Music uploaded! 🎵');
+                    try {
+                      const url = await uploadFile('music', file);
+                      data.updateSettings({ musicFile: url });
+                      toast.success('Music uploaded! 🎵');
+                    } catch (err: any) {
+                      toast.error(err.message || 'Upload failed');
+                    }
                   }}
                 />
                 {data.settings.musicFile ? (
