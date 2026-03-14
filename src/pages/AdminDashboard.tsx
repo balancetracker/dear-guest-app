@@ -155,7 +155,7 @@ export default function AdminDashboard() {
         <h1 className="font-display text-xl font-semibold text-foreground">💍 Wedding Admin</h1>
         <div className="flex items-center gap-4">
           <a href="/" className="text-sm text-accent-foreground bg-accent/20 rounded-full px-4 py-2 hover:bg-accent/30 transition-colors">← View Site</a>
-          <button onClick={() => setAuthed(false)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <button onClick={handleLogout} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Logout
           </button>
         </div>
