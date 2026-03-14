@@ -689,7 +689,8 @@ export default function AdminDashboard() {
               <ImageUpload
                 label="Upload bank QR code"
                 current={data.bankQR || undefined}
-                onUpload={(base64) => data.setBankInfo(data.bankName, data.bankAccount, base64)}
+                bucket="photos"
+                onUpload={(url) => data.setBankInfo(data.bankName, data.bankAccount, url)}
               />
               {data.bankQR && (
                 <button
