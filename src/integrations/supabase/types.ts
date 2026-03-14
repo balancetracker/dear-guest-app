@@ -109,9 +109,13 @@ export type Database = {
       }
       settings: {
         Row: {
+          calendar_url: string | null
           contact_email: string | null
+          contact_facebook: string | null
           contact_phone: string | null
+          contact_telegram: string | null
           couple_names: string | null
+          couple_names_km: string | null
           created_at: string | null
           dress_code: string | null
           gift_bank_account: string | null
@@ -121,17 +125,31 @@ export type Database = {
           hero_subtitle: string | null
           hero_title: string | null
           id: string
+          map_embed_url: string | null
+          map_lat: string | null
+          map_lng: string | null
+          music_file: string | null
           music_url: string | null
           updated_at: string | null
           venue: string | null
+          venue_km: string | null
           venue_maps: string | null
           wedding_date: string | null
+          wedding_date_km: string | null
+          wedding_date_time: string | null
+          wedding_description: string | null
+          wedding_description_km: string | null
           wedding_time: string | null
+          wedding_time_km: string | null
         }
         Insert: {
+          calendar_url?: string | null
           contact_email?: string | null
+          contact_facebook?: string | null
           contact_phone?: string | null
+          contact_telegram?: string | null
           couple_names?: string | null
+          couple_names_km?: string | null
           created_at?: string | null
           dress_code?: string | null
           gift_bank_account?: string | null
@@ -141,17 +159,31 @@ export type Database = {
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
+          map_embed_url?: string | null
+          map_lat?: string | null
+          map_lng?: string | null
+          music_file?: string | null
           music_url?: string | null
           updated_at?: string | null
           venue?: string | null
+          venue_km?: string | null
           venue_maps?: string | null
           wedding_date?: string | null
+          wedding_date_km?: string | null
+          wedding_date_time?: string | null
+          wedding_description?: string | null
+          wedding_description_km?: string | null
           wedding_time?: string | null
+          wedding_time_km?: string | null
         }
         Update: {
+          calendar_url?: string | null
           contact_email?: string | null
+          contact_facebook?: string | null
           contact_phone?: string | null
+          contact_telegram?: string | null
           couple_names?: string | null
+          couple_names_km?: string | null
           created_at?: string | null
           dress_code?: string | null
           gift_bank_account?: string | null
@@ -161,12 +193,22 @@ export type Database = {
           hero_subtitle?: string | null
           hero_title?: string | null
           id?: string
+          map_embed_url?: string | null
+          map_lat?: string | null
+          map_lng?: string | null
+          music_file?: string | null
           music_url?: string | null
           updated_at?: string | null
           venue?: string | null
+          venue_km?: string | null
           venue_maps?: string | null
           wedding_date?: string | null
+          wedding_date_km?: string | null
+          wedding_date_time?: string | null
+          wedding_description?: string | null
+          wedding_description_km?: string | null
           wedding_time?: string | null
+          wedding_time_km?: string | null
         }
         Relationships: []
       }
