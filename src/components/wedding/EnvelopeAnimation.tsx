@@ -78,7 +78,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
     <AnimatePresence>
       {!isOpen &&
       <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10 text-accent bg-destructive"
         exit={{ opacity: 0, scale: 1.1 }}
         transition={{ duration: 0.6 }}>
         
@@ -113,7 +113,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
           <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-32 md:w-48 opacity-50 pointer-events-none scale-[-1]" />
 
           <motion.div
-          className="flex flex-col items-center gap-8"
+          className="gap-8 text-destructive bg-primary-foreground items-center justify-start flex flex-col"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ ...spring, duration: 0.8 }}>
@@ -125,7 +125,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             onClick={handleOpen}>
             
               {/* Envelope body */}
-              <div className="absolute inset-0 glass-strong rounded-2xl shadow-lg" />
+              <div className="absolute inset-0 glass-strong shadow-lg text-primary bg-ring rounded-lg" />
               
               {/* Envelope flap */}
               <motion.div
