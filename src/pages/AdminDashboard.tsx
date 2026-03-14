@@ -800,9 +800,13 @@ export default function AdminDashboard() {
                       toast.error('File too large (max 10MB)');
                       return;
                     }
-                    const base64 = await fileToBase64(file);
-                    data.updateSettings({ musicFile: base64 });
-                    toast.success('Music uploaded! 🎵');
+                    try {
+                      const url = await uploadFile('music', file);
+                      data.updateSettings({ musicFile: url });
+                      toast.success('Music uploaded! 🎵');
+                    } catch (err: any) {
+                      toast.error(err.message || 'Upload failed');
+                    }
                   }}
                 />
                 {data.settings.musicFile ? (
