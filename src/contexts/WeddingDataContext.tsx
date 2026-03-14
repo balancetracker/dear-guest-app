@@ -80,6 +80,7 @@ const defaultSettings: WeddingSettings = {
   contactFacebook: 'https://facebook.com/',
   contactEmail: 'wedding@example.com',
   musicUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+  musicFile: '',
   heroImage: '',
   weddingDescription: 'We joyfully invite you to celebrate the beginning of our new journey together.',
   weddingDescriptionKm: 'យើងខ្ញុំសូមគោរពអញ្ជើញអ្នកមកចូលរួមពិធីមង្គលការរបស់យើង។',
