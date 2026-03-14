@@ -165,7 +165,7 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
             {/* Open button */}
             <motion.button
             onClick={handleOpen}
-            className="min-h-[48px] px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-shadow bg-primary text-slate-800 font-sans rounded-sm"
+            className={`min-h-[48px] px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-shadow bg-primary text-primary-foreground rounded-sm ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={spring}
