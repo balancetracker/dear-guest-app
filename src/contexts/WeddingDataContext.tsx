@@ -160,20 +160,23 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   const [bankQR, setBankQR] = useState('');
   const [settings, setSettings] = useState<WeddingSettings>(defaultSettings);
   const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [programSchedule, setProgramSchedule] = useState<ProgramItem[]>([]);
 
   // --- Fetch initial data ---
   useEffect(() => {
     const fetchAll = async () => {
-      const [guestsRes, wishesRes, photosRes, settingsRes] = await Promise.all([
+      const [guestsRes, wishesRes, photosRes, settingsRes, programRes] = await Promise.all([
         supabase.from('guests').select('*').order('created_at', { ascending: true }),
         supabase.from('wishes').select('*').order('created_at', { ascending: false }),
         supabase.from('photos').select('*').order('created_at', { ascending: true }),
         supabase.from('settings').select('*').limit(1).single(),
+        supabase.from('program_schedule').select('*').order('order_index', { ascending: true }),
       ]);
 
       if (guestsRes.data) setGuests(guestsRes.data.map(dbToGuest));
       if (wishesRes.data) setWishes(wishesRes.data.map(dbToWish));
       if (photosRes.data) setPhotos(photosRes.data.map((p: any) => p.url));
+      if (programRes.data) setProgramSchedule(programRes.data as ProgramItem[]);
 
       if (settingsRes.data) {
         const mapped = dbToSettings(settingsRes.data);
@@ -230,6 +233,18 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
         setBankAccount(mapped.bankAccount);
         setBankQR(mapped.bankQR);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'program_schedule' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setProgramSchedule(prev => {
+            if (prev.find(p => p.id === payload.new.id)) return prev;
+            return [...prev, payload.new as ProgramItem].sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setProgramSchedule(prev => prev.map(p => p.id === payload.new.id ? payload.new as ProgramItem : p).sort((a, b) => (a.order_index || 0) - (b.order_index || 0)));
+        } else if (payload.eventType === 'DELETE') {
+          setProgramSchedule(prev => prev.filter(p => p.id !== payload.old.id));
+        }
+      })
       .subscribe();
 
     return () => {
@@ -247,12 +262,10 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateRSVP = useCallback(async (name: string, status: 'attending' | 'not_attending', numGuests: number) => {
-    // Find guest by name (case-insensitive)
     const { data } = await supabase.from('guests').select('id').ilike('name', name).limit(1).single();
     if (data) {
       await supabase.from('guests').update({ rsvp_status: status, number_of_guests: numGuests }).eq('id', data.id);
     } else {
-      // Guest not found - insert with status
       await supabase.from('guests').insert({ name, rsvp_status: status, number_of_guests: numGuests });
     }
   }, []);
@@ -277,14 +290,12 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase.from('settings').insert(update as any).select('id').single();
       if (data) setSettingsId(data.id);
     }
-    // Optimistic update
     setBankName(name);
     setBankAccount(account);
     setBankQR(qr);
   }, [settingsId]);
 
   const updateSettings = useCallback(async (s: Partial<WeddingSettings>) => {
-    // Map app fields to DB columns
     const dbUpdate: Record<string, any> = {};
     if (s.coupleNames !== undefined) dbUpdate.couple_names = s.coupleNames;
     if (s.coupleNamesKm !== undefined) dbUpdate.couple_names_km = s.coupleNamesKm;
@@ -317,12 +328,41 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
       const { data } = await supabase.from('settings').insert(dbUpdate).select('id').single();
       if (data) setSettingsId(data.id);
     }
-    // Optimistic update
     setSettings(prev => ({ ...prev, ...s }));
   }, [settingsId]);
 
+  const addProgramItem = useCallback(async (item: Omit<ProgramItem, 'id'>) => {
+    await supabase.from('program_schedule').insert({
+      time_en: item.time_en,
+      time_km: item.time_km,
+      title_en: item.title_en,
+      title_km: item.title_km,
+      order_index: item.order_index || programSchedule.length,
+    });
+  }, [programSchedule.length]);
+
+  const removeProgramItem = useCallback(async (id: string) => {
+    await supabase.from('program_schedule').delete().eq('id', id);
+  }, []);
+
+  const updateProgramItem = useCallback(async (id: string, item: Partial<ProgramItem>) => {
+    const dbUpdate: Record<string, any> = {};
+    if (item.time_en !== undefined) dbUpdate.time_en = item.time_en;
+    if (item.time_km !== undefined) dbUpdate.time_km = item.time_km;
+    if (item.title_en !== undefined) dbUpdate.title_en = item.title_en;
+    if (item.title_km !== undefined) dbUpdate.title_km = item.title_km;
+    if (item.order_index !== undefined) dbUpdate.order_index = item.order_index;
+    if (Object.keys(dbUpdate).length > 0) {
+      await supabase.from('program_schedule').update(dbUpdate).eq('id', id);
+    }
+  }, []);
+
   return (
-    <WeddingDataContext.Provider value={{ guests, wishes, photos, bankName, bankAccount, bankQR, settings, addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings }}>
+    <WeddingDataContext.Provider value={{
+      guests, wishes, photos, bankName, bankAccount, bankQR, settings, programSchedule,
+      addGuest, removeGuest, updateRSVP, addWish, addPhoto, removePhoto, setBankInfo, updateSettings,
+      addProgramItem, removeProgramItem, updateProgramItem,
+    }}>
       {children}
     </WeddingDataContext.Provider>
   );
