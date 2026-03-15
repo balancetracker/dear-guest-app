@@ -6,23 +6,20 @@ interface Petal {
   delay: number;
   duration: number;
   size: number;
-  emoji: string;
 }
 
 export default function FallingPetals() {
   const [petals, setPetals] = useState<Petal[]>([]);
 
   useEffect(() => {
-    const emojis = ['🌸', '🩷', '💮', '🪷', '🌼', '🌺', '🌷', '✿', '❀', '🏵️'];
-    const newPetals: Petal[] = Array.from({ length: 30 }, (_, i) => ({
+    // Reduced count for performance
+    setPetals(Array.from({ length: 10 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 10,
-      duration: 8 + Math.random() * 10,
-      size: 12 + Math.random() * 14,
-      emoji: emojis[Math.floor(Math.random() * emojis.length)],
-    }));
-    setPetals(newPetals);
+      delay: Math.random() * 12,
+      duration: 12 + Math.random() * 10,
+      size: 12 + Math.random() * 8,
+    })));
   }, []);
 
   return (
@@ -36,11 +33,12 @@ export default function FallingPetals() {
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.duration}s`,
             fontSize: `${p.size}px`,
-            top: '-30px',
-            opacity: 0.6,
+            top: '-20px',
+            opacity: 0.4,
+            filter: 'saturate(0.6)',
           }}
         >
-          {p.emoji}
+          🌸
         </span>
       ))}
     </div>

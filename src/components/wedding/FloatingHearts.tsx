@@ -7,10 +7,10 @@ export default function FloatingHearts() {
     const interval = setInterval(() => {
       setHearts(prev => {
         const next = [...prev, { id: Date.now(), left: 20 + Math.random() * 60, bottom: Math.random() * 20 }];
-        if (next.length > 15) next.shift();
+        if (next.length > 6) next.shift();
         return next;
       });
-    }, 3000);
+    }, 5000); // Less frequent
     return () => clearInterval(interval);
   }, []);
 
@@ -19,10 +19,10 @@ export default function FloatingHearts() {
       {hearts.map(h => (
         <span
           key={h.id}
-          className="absolute animate-float-up text-primary"
-          style={{ left: `${h.left}%`, bottom: `${h.bottom}%`, fontSize: '20px' }}
+          className="absolute animate-float-up text-primary/40"
+          style={{ left: `${h.left}%`, bottom: `${h.bottom}%`, fontSize: '16px' }}
         >
-          ❤️
+          ♡
         </span>
       ))}
     </div>

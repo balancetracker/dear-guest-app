@@ -10,13 +10,9 @@ export default function MusicToggle() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentUrlRef = useRef<string>('');
 
-  const getMusicSource = () => {
-    // Check for uploaded music (base64) first, then URL
-    return settings.musicFile || settings.musicUrl;
-  };
+  const getMusicSource = () => settings.musicFile || settings.musicUrl;
 
   useEffect(() => {
-    // Reset audio when source changes
     const src = getMusicSource();
     if (audioRef.current && currentUrlRef.current !== src) {
       audioRef.current.pause();
@@ -28,11 +24,10 @@ export default function MusicToggle() {
   const toggle = () => {
     const src = getMusicSource();
     if (!src) return;
-
     if (!audioRef.current || currentUrlRef.current !== src) {
       audioRef.current = new Audio(src);
       audioRef.current.loop = true;
-      audioRef.current.volume = 0.3;
+      audioRef.current.volume = 0.25;
       currentUrlRef.current = src;
     }
     if (playing) {
@@ -46,12 +41,21 @@ export default function MusicToggle() {
   return (
     <motion.button
       onClick={toggle}
-      className="fixed top-4 left-4 z-40 glass-strong text-foreground rounded-full w-10 h-10 flex items-center justify-center text-lg"
+      className="fixed bottom-5 right-5 z-40 w-11 h-11 rounded-full flex items-center justify-center text-base shadow-luxury gold-border"
+      style={{
+        background: playing
+          ? 'linear-gradient(135deg, hsl(38 55% 58%), hsl(38 60% 48%))'
+          : 'rgba(255,253,248,.85)',
+        color: playing ? 'white' : 'hsl(25 15% 18%)',
+        backdropFilter: 'blur(20px)',
+      }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
+      animate={playing ? { rotate: [0, 5, -5, 0] } : {}}
+      transition={playing ? { duration: 2, repeat: Infinity } : {}}
       aria-label="Toggle music"
     >
-      {playing ? t('music.on') : t('music.off')}
+      {playing ? '♫' : '♪'}
     </motion.button>
   );
 }
