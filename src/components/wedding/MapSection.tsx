@@ -12,6 +12,13 @@ export default function MapSection() {
   const fontClass = lang === 'km' ? 'font-khmer' : '';
   const mapsUrl = `https://maps.google.com/?q=${settings.mapLat},${settings.mapLng}`;
 
+  // Use OpenStreetMap static tile as fallback (no iframe blocking issues)
+  const osmStaticUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${
+    parseFloat(settings.mapLng) - 0.01
+  },${parseFloat(settings.mapLat) - 0.008},${
+    parseFloat(settings.mapLng) + 0.01
+  },${parseFloat(settings.mapLat) + 0.008}&layer=mapnik&marker=${settings.mapLat},${settings.mapLng}`;
+
   return (
     <motion.section
       className="py-24 px-6"
@@ -36,6 +43,20 @@ export default function MapSection() {
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
+              title="Wedding venue location"
+              sandbox="allow-scripts allow-same-origin"
+              onError={(e) => {
+                // Hide broken iframe and show fallback
+                (e.target as HTMLIFrameElement).style.display = 'none';
+              }}
+            />
+          ) : settings.mapLat && settings.mapLng ? (
+            <iframe
+              src={osmStaticUrl}
+              width="100%"
+              height="300"
+              style={{ border: 0 }}
+              loading="lazy"
               title="Wedding venue location"
             />
           ) : (
