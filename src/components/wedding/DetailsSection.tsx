@@ -26,6 +26,27 @@ function useCountdown(dateStr: string) {
   return time;
 }
 
+function generateICSUrl(settings: { weddingDateTime: string; coupleNames: string; venueName: string }) {
+  const start = new Date(settings.weddingDateTime);
+  const end = new Date(start.getTime() + 4 * 3600000); // 4 hours
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'BEGIN:VEVENT',
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${settings.coupleNames} Wedding`,
+    `LOCATION:${settings.venueName}`,
+    'DESCRIPTION:Wedding Ceremony',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  
+  return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+}
+
 export default function DetailsSection() {
   const { t, lang } = useLanguage();
   const { settings } = useWeddingData();
@@ -35,6 +56,16 @@ export default function DetailsSection() {
   const dateDisplay = lang === 'km' ? settings.weddingDateKm : settings.weddingDate;
   const timeDisplay = lang === 'km' ? settings.weddingTimeKm : settings.weddingTime;
   const venueDisplay = lang === 'km' ? settings.venueNameKm : settings.venueName;
+
+  const icsUrl = generateICSUrl(settings);
+
+  const handleAddToCalendar = () => {
+    // Try to download .ics file which will open in phone's calendar app
+    const a = document.createElement('a');
+    a.href = icsUrl;
+    a.download = 'wedding.ics';
+    a.click();
+  };
 
   return (
     <motion.section
@@ -93,16 +124,14 @@ export default function DetailsSection() {
           ))}
         </div>
 
-        <motion.a
-          href={settings.calendarUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <motion.button
+          onClick={handleAddToCalendar}
           className={`inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 font-display text-lg shadow-surface ${fontClass}`}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
           📅 {t('details.calendar')}
-        </motion.a>
+        </motion.button>
       </div>
     </motion.section>
   );

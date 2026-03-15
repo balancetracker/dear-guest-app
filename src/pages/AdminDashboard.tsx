@@ -8,7 +8,7 @@ import { uploadFile } from '@/lib/supabase-storage';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
-type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'map' | 'bank' | 'contacts' | 'music';
+type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'program' | 'map' | 'bank' | 'contacts' | 'music';
 
 function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
   onUpload: (url: string) => void;
@@ -137,6 +137,7 @@ export default function AdminDashboard() {
     { key: 'wishes', label: 'Wishes', icon: '💌' },
     { key: 'photos', label: 'Photos', icon: '📸' },
     { key: 'wedding', label: 'Info', icon: '💍' },
+    { key: 'program', label: 'Program', icon: '📋' },
     { key: 'map', label: 'Map', icon: '📍' },
     { key: 'bank', label: 'Bank', icon: '🏦' },
     { key: 'contacts', label: 'Contact', icon: '📱' },
@@ -572,6 +573,87 @@ export default function AdminDashboard() {
                 </motion.button>
               </form>
             </div>
+          </div>
+        )}
+
+        {/* PROGRAM SCHEDULE TAB */}
+        {tab === 'program' && (
+          <div className="space-y-6">
+            <div className={sectionCard}>
+              <h3 className="font-display text-lg font-semibold text-foreground">📋 Wedding Program Schedule</h3>
+              <p className="text-sm text-muted-foreground">Add and manage the ceremony schedule items shown on the invitation.</p>
+              
+              <form onSubmit={e => {
+                e.preventDefault();
+                const fd = new FormData(e.target as HTMLFormElement);
+                data.addProgramItem({
+                  time_en: fd.get('time_en') as string,
+                  time_km: fd.get('time_km') as string,
+                  title_en: fd.get('title_en') as string,
+                  title_km: fd.get('title_km') as string,
+                  order_index: data.programSchedule.length,
+                });
+                (e.target as HTMLFormElement).reset();
+                toast.success('Program item added!');
+              }} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Time (EN)</label>
+                    <input name="time_en" className={inputClass} placeholder="07:00 AM" required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Time (KM)</label>
+                    <input name="time_km" className={inputClass} placeholder="07:00 ព្រឹក" required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Title (EN)</label>
+                    <input name="title_en" className={inputClass} placeholder="Guest Reception" required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Title (KM)</label>
+                    <input name="title_km" className={inputClass} placeholder="ពិធីទទួលភ្ញៀវ" required />
+                  </div>
+                </div>
+                <motion.button
+                  type="submit"
+                  className={saveBtn}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  + Add Item
+                </motion.button>
+              </form>
+            </div>
+
+            {data.programSchedule.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-muted-foreground">{data.programSchedule.length} items</h4>
+                {data.programSchedule.map((item, i) => (
+                  <motion.div
+                    key={item.id || i}
+                    className="glass-card rounded-2xl p-4 flex items-center justify-between gap-4"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">{item.time_en} / {item.time_km}</p>
+                      <p className="text-sm text-muted-foreground">{item.title_en} / {item.title_km}</p>
+                    </div>
+                    {item.id && (
+                      <button
+                        onClick={() => { data.removeProgramItem(item.id!); toast.success('Item removed'); }}
+                        className="text-xs text-destructive hover:bg-destructive/10 rounded-full px-3 py-1.5 transition-colors flex-shrink-0"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            {data.programSchedule.length === 0 && (
+              <p className="text-muted-foreground text-center py-8">No program items yet. Default schedule will be shown.</p>
+            )}
           </div>
         )}
 
