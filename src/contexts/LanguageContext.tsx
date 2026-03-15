@@ -23,7 +23,7 @@ const translations: Record<string, Record<Lang, string>> = {
   'details.time_value': { en: '11:30 AM', km: '១១:៣០ ព្រឹក' },
   'details.venue': { en: 'Venue', km: 'ទីកន្លែង' },
   'details.venue_name': { en: 'The Grand Palace Hotel', km: 'សណ្ឋាគារ ព្រះបរមរាជវាំង' },
-  'details.calendar': { en: 'Add to Google Calendar', km: 'បន្ថែមទៅ Google Calendar' },
+  'details.calendar': { en: 'Save to Calendar', km: 'រក្សាទុកក្នុងប្រតិទិន' },
   'details.countdown': { en: 'Counting down to our big day', km: 'រាប់ថយក្រោយរហូតដល់ថ្ងៃពិសេស' },
   'details.days': { en: 'Days', km: 'ថ្ងៃ' },
   'details.hours': { en: 'Hours', km: 'ម៉ោង' },
