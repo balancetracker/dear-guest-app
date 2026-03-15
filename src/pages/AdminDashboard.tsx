@@ -655,6 +655,9 @@ export default function AdminDashboard() {
               <p className="text-muted-foreground text-center py-8">No program items yet. Default schedule will be shown.</p>
             )}
           </div>
+        )}
+
+        {/* MAP TAB */}
         {tab === 'map' && (
           <div className={sectionCard}>
             <h3 className="font-display text-lg font-semibold text-foreground">📍 Map & Location</h3>
