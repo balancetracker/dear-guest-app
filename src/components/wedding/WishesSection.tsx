@@ -3,9 +3,8 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { toast } from 'sonner';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 export default function WishesSection() {
   const { t, lang } = useLanguage();
@@ -25,26 +24,26 @@ export default function WishesSection() {
 
   return (
     <motion.section
-      className="py-24 px-6 bg-card/50"
+      className="py-14 sm:py-20 px-5 bg-champagne/30"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
       <div className="max-w-2xl mx-auto text-center">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('wishes.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
+        <div className="section-divider mb-8" />
 
-        <form onSubmit={handleSubmit} className="mb-10 space-y-4">
+        <form onSubmit={handleSubmit} className="mb-8 space-y-3 max-w-md mx-auto">
           <input
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder={t('wishes.name')}
             maxLength={100}
-            className={`w-full min-h-[48px] rounded-xl glass-card px-4 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring ${fontClass}`}
+            className={`w-full min-h-[44px] rounded-xl bg-ivory/80 backdrop-blur-sm gold-border px-4 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-gold text-sm ${fontClass}`}
           />
           <textarea
             value={message}
@@ -52,11 +51,12 @@ export default function WishesSection() {
             placeholder={t('wishes.placeholder')}
             maxLength={500}
             rows={3}
-            className={`w-full rounded-xl glass-card px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-ring resize-none ${fontClass}`}
+            className={`w-full rounded-xl bg-ivory/80 backdrop-blur-sm gold-border px-4 py-3 text-foreground placeholder:text-muted-foreground/60 focus:ring-2 focus:ring-gold resize-none text-sm ${fontClass}`}
           />
           <motion.button
             type="submit"
-            className={`bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 font-display shadow-surface ${fontClass}`}
+            className={`rounded-full min-h-[44px] px-6 py-2.5 text-sm shadow-luxury ${fontClass}`}
+            style={{ background: 'linear-gradient(135deg, hsl(38 55% 58%), hsl(38 60% 48%))', color: 'white' }}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
           >
@@ -64,23 +64,22 @@ export default function WishesSection() {
           </motion.button>
         </form>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           {wishes.map((w, i) => (
             <motion.div
               key={w.id}
-              className="glass-card rounded-2xl p-5 text-left"
-              initial={{ opacity: 0, y: 20 }}
+              className="luxury-card rounded-2xl p-4 text-left"
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ ...spring, delay: i * 0.1 }}
-              whileHover={{ scale: 1.02 }}
+              transition={{ ...spring, delay: i * 0.08 }}
             >
-              <p className={`text-foreground mb-3 ${fontClass}`}>"{w.message}"</p>
+              <p className={`text-foreground text-sm mb-2.5 leading-relaxed ${fontClass}`}>"{w.message}"</p>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-primary/40 flex items-center justify-center text-sm">
+                <div className="w-7 h-7 rounded-full bg-gold-light/40 flex items-center justify-center text-xs font-display font-bold text-foreground">
                   {w.guestName.charAt(0).toUpperCase()}
                 </div>
-                <p className={`text-sm text-muted-foreground ${fontClass}`}>{w.guestName}</p>
+                <p className={`text-xs text-muted-foreground ${fontClass}`}>{w.guestName}</p>
               </div>
             </motion.div>
           ))}

@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 const defaultPhotos = [
   'https://images.unsplash.com/photo-1519741497674-611481863552?w=400&h=500&fit=crop',
@@ -20,60 +19,54 @@ export default function GallerySection() {
   const { photos } = useWeddingData();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const fontClass = lang === 'km' ? 'font-khmer' : '';
-
   const displayPhotos = photos.length > 0 ? photos : defaultPhotos;
 
   const navigateLightbox = (dir: number) => {
     if (lightboxIndex === null) return;
-    const next = (lightboxIndex + dir + displayPhotos.length) % displayPhotos.length;
-    setLightboxIndex(next);
+    setLightboxIndex((lightboxIndex + dir + displayPhotos.length) % displayPhotos.length);
   };
 
   return (
     <motion.section
-      className="py-24 px-4 md:px-6 relative"
+      className="py-14 sm:py-20 px-4 sm:px-5 relative"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={spring}
     >
-      <div className="absolute inset-0 bg-card/30 backdrop-blur-[2px]" />
-
       <div className="max-w-5xl mx-auto text-center relative z-10">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('gallery.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
+        <div className="section-divider mb-8" />
 
-        <div className="columns-2 md:columns-3 gap-3 space-y-3">
+        {/* Masonry grid */}
+        <div className="columns-2 md:columns-3 gap-2.5 space-y-2.5">
           {displayPhotos.map((photo, i) => (
             <motion.div
               key={i}
-              className="break-inside-avoid rounded-2xl overflow-hidden glass-card cursor-pointer group"
-              initial={{ opacity: 0, scale: 0.9 }}
+              className="break-inside-avoid rounded-xl overflow-hidden cursor-pointer group relative"
+              initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ ...spring, delay: i * 0.05 }}
+              transition={{ ...spring, delay: i * 0.04 }}
               onClick={() => setLightboxIndex(i)}
-              whileHover={{ scale: 1.02 }}
             >
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden rounded-xl gold-border">
                 <img
                   src={photo}
                   alt={`Wedding photo ${i + 1}`}
-                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/10 transition-colors flex items-center justify-center">
-                  <span className="text-card text-2xl opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             </motion.div>
           ))}
         </div>
 
-        <p className={`text-sm text-muted-foreground mt-6 ${fontClass}`}>
-          🌼 {displayPhotos.length} {lang === 'km' ? 'រូបថត' : 'photos'} • {lang === 'km' ? 'ចុចដើម្បីមើលពេញ' : 'Tap to view full size'}
+        <p className={`text-xs text-muted-foreground mt-5 ${fontClass}`}>
+          {displayPhotos.length} {lang === 'km' ? 'រូបថត' : 'photos'} • {lang === 'km' ? 'ចុចដើម្បីមើលពេញ' : 'Tap to view'}
         </p>
       </div>
 
@@ -81,7 +74,7 @@ export default function GallerySection() {
       <AnimatePresence>
         {lightboxIndex !== null && (
           <motion.div
-            className="fixed inset-0 z-50 bg-foreground/80 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-foreground/85 backdrop-blur-xl flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -89,9 +82,9 @@ export default function GallerySection() {
           >
             <motion.div
               className="relative max-w-4xl max-h-[90vh] w-full flex items-center justify-center"
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
+              exit={{ scale: 0.85, opacity: 0 }}
               transition={spring}
               onClick={(e) => e.stopPropagation()}
             >
@@ -102,23 +95,17 @@ export default function GallerySection() {
               />
               <button
                 onClick={() => setLightboxIndex(null)}
-                className="absolute top-2 right-2 w-10 h-10 rounded-full glass-strong flex items-center justify-center text-foreground text-lg hover:bg-card/90 transition-colors"
-              >
-                ✕
-              </button>
+                className="absolute top-2 right-2 w-10 h-10 rounded-full glass-strong flex items-center justify-center text-foreground"
+              >✕</button>
               <button
                 onClick={() => navigateLightbox(-1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-strong flex items-center justify-center text-foreground text-xl hover:bg-card/90 transition-colors"
-              >
-                ‹
-              </button>
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass-strong flex items-center justify-center text-foreground text-xl"
+              >‹</button>
               <button
                 onClick={() => navigateLightbox(1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full glass-strong flex items-center justify-center text-foreground text-xl hover:bg-card/90 transition-colors"
-              >
-                ›
-              </button>
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 glass-strong rounded-full px-4 py-1 text-sm text-foreground">
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass-strong flex items-center justify-center text-foreground text-xl"
+              >›</button>
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 glass-strong rounded-full px-4 py-1 text-xs text-foreground">
                 {lightboxIndex + 1} / {displayPhotos.length}
               </div>
             </motion.div>

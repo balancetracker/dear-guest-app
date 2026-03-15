@@ -2,9 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 export default function TimelineSection() {
   const { t, lang } = useLanguage();
@@ -19,32 +18,32 @@ export default function TimelineSection() {
 
   return (
     <motion.section
-      className="py-24 px-4 sm:px-6 bg-card/50"
+      className="py-14 sm:py-20 px-5 bg-champagne/30"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
       <div className="max-w-xl mx-auto text-center">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('timeline.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-12" />
+        <div className="section-divider mb-10" />
 
         {isEmpty ? (
-          <div className="glass-card rounded-xl p-6 text-center">
+          <div className="luxury-card rounded-xl p-5 text-center">
             <p className={`text-sm text-muted-foreground ${fontClass}`}>
               {lang === 'km'
-                ? 'មិនទាន់មានដំណើរកម្មវិធីនៅឡើយទេ។ សូមពិនិត្យម្ដងទៀតនៅពេលក្រោយ។'
-                : 'Program schedule has not been published yet. Please check back soon.'}
+                ? 'មិនទាន់មានដំណើរកម្មវិធីនៅឡើយទេ។'
+                : 'Program schedule has not been published yet.'}
             </p>
           </div>
         ) : (
           <div className="relative">
             {/* Center line */}
-            <div className="absolute left-5 sm:left-1/2 top-0 bottom-0 w-0.5 bg-primary/20 sm:-translate-x-px" />
+            <div className="absolute left-5 sm:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-gold-light to-transparent sm:-translate-x-px" />
 
-            <div className="space-y-6">
+            <div className="space-y-4">
               {items.map((item, i) => {
                 const time = (lang === 'km' ? item.time_km || item.time_en : item.time_en || item.time_km) || '';
                 const title = (lang === 'km' ? item.title_km || item.title_en : item.title_en || item.title_km) || '';
@@ -54,24 +53,24 @@ export default function TimelineSection() {
                   <motion.div
                     key={item.id || i}
                     className="relative"
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ ...spring, delay: i * 0.08 }}
+                    transition={{ ...spring, delay: i * 0.06 }}
                   >
-                    {/* Desktop: alternating layout */}
-                    <div className="hidden sm:grid sm:grid-cols-[1fr_40px_1fr] items-center gap-0">
+                    {/* Desktop */}
+                    <div className="hidden sm:grid sm:grid-cols-[1fr_36px_1fr] items-center gap-0">
                       {isLeft ? (
                         <>
-                          <div className="text-right pr-5">
-                            <div className="glass-card rounded-xl p-4 inline-block text-right">
-                              <p className={`text-xs font-semibold text-primary mb-0.5 ${fontClass}`}>{time}</p>
+                          <div className="text-right pr-4">
+                            <div className="luxury-card rounded-xl p-3 inline-block text-right">
+                              <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
                               <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
                             </div>
                           </div>
                           <div className="flex justify-center">
-                            <div className="w-9 h-9 rounded-full bg-primary/15 border-[3px] border-primary/40 flex items-center justify-center text-xs z-10">
-                              🕐
+                            <div className="w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs z-10 shadow-glow">
+                              ✦
                             </div>
                           </div>
                           <div />
@@ -80,13 +79,13 @@ export default function TimelineSection() {
                         <>
                           <div />
                           <div className="flex justify-center">
-                            <div className="w-9 h-9 rounded-full bg-primary/15 border-[3px] border-primary/40 flex items-center justify-center text-xs z-10">
-                              🕐
+                            <div className="w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs z-10 shadow-glow">
+                              ✦
                             </div>
                           </div>
-                          <div className="text-left pl-5">
-                            <div className="glass-card rounded-xl p-4 inline-block text-left">
-                              <p className={`text-xs font-semibold text-primary mb-0.5 ${fontClass}`}>{time}</p>
+                          <div className="text-left pl-4">
+                            <div className="luxury-card rounded-xl p-3 inline-block text-left">
+                              <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
                               <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
                             </div>
                           </div>
@@ -94,13 +93,13 @@ export default function TimelineSection() {
                       )}
                     </div>
 
-                    {/* Mobile: left-aligned */}
+                    {/* Mobile */}
                     <div className="flex sm:hidden items-center gap-3">
-                      <div className="relative z-10 w-9 h-9 rounded-full bg-primary/15 border-[3px] border-primary/40 flex items-center justify-center text-xs flex-shrink-0 ml-0.5">
-                        🕐
+                      <div className="relative z-10 w-8 h-8 rounded-full bg-champagne border-2 border-gold-light flex items-center justify-center text-xs flex-shrink-0 ml-1 shadow-glow">
+                        ✦
                       </div>
-                      <div className="glass-card rounded-xl p-3 flex-1">
-                        <p className={`text-xs font-semibold text-primary mb-0.5 ${fontClass}`}>{time}</p>
+                      <div className="luxury-card rounded-xl p-3 flex-1">
+                        <p className={`text-[11px] font-semibold text-gold mb-0.5 ${fontClass}`}>{time}</p>
                         <h3 className={`font-semibold text-foreground text-sm ${fontClass}`}>{title}</h3>
                       </div>
                     </div>

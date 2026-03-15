@@ -26,7 +26,7 @@ export default function InvitationPage() {
 
   return (
     <LanguageProvider>
-      <div className="relative">
+      <div className="relative min-h-screen bg-background">
         <EnvelopeAnimation
           guestName={guestName}
           onOpen={() => setEnvelopeOpen(true)}
@@ -42,12 +42,12 @@ export default function InvitationPage() {
             <LanguageSwitcher />
             <MusicToggle />
 
-            <main>
+            <main className="relative z-[1]">
               <HeroSection />
               <GreetingSection guestName={guestName} />
+              <DetailsSection />
               <TimelineSection />
               <GallerySection />
-              <DetailsSection />
               <MapSection />
               <RSVPSection guestName={guestName} />
               <GiftSection />
@@ -55,8 +55,9 @@ export default function InvitationPage() {
               <ContactSection />
 
               {/* Footer */}
-              <footer className="py-12 text-center text-muted-foreground text-sm">
-                <p className="font-display text-lg">Made with ❤️</p>
+              <footer className="py-10 text-center">
+                <div className="section-divider mb-4" />
+                <p className="font-display text-sm text-muted-foreground italic">Made with love ♡</p>
               </footer>
             </main>
           </>

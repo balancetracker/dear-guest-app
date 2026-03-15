@@ -13,15 +13,14 @@ export default function SparkleEffect() {
   const [sparkles, setSparkles] = useState<Sparkle[]>([]);
 
   useEffect(() => {
-    const items: Sparkle[] = Array.from({ length: 20 }, (_, i) => ({
+    setSparkles(Array.from({ length: 8 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       top: Math.random() * 100,
-      size: 8 + Math.random() * 12,
-      delay: Math.random() * 5,
-      duration: 2 + Math.random() * 3,
-    }));
-    setSparkles(items);
+      size: 6 + Math.random() * 8,
+      delay: Math.random() * 6,
+      duration: 3 + Math.random() * 3,
+    })));
   }, []);
 
   return (
@@ -29,7 +28,7 @@ export default function SparkleEffect() {
       {sparkles.map(s => (
         <span
           key={s.id}
-          className="absolute animate-sparkle"
+          className="absolute animate-sparkle text-gold-light/30"
           style={{
             left: `${s.left}%`,
             top: `${s.top}%`,
@@ -38,7 +37,7 @@ export default function SparkleEffect() {
             animationDuration: `${s.duration}s`,
           }}
         >
-          ✨
+          ✦
         </span>
       ))}
     </div>
