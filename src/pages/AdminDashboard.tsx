@@ -585,17 +585,28 @@ export default function AdminDashboard() {
               
               <form onSubmit={async e => {
                 e.preventDefault();
-                const fd = new FormData(e.target as HTMLFormElement);
+                const form = e.target as HTMLFormElement;
+                const fd = new FormData(form);
+
+                const payload = {
+                  time_en: (fd.get('time_en') as string)?.trim(),
+                  time_km: (fd.get('time_km') as string)?.trim(),
+                  title_en: (fd.get('title_en') as string)?.trim(),
+                  title_km: (fd.get('title_km') as string)?.trim(),
+                };
+
+                if (!payload.time_en || !payload.time_km || !payload.title_en || !payload.title_km) {
+                  toast.error('Please fill all program fields.');
+                  return;
+                }
+
                 try {
                   await data.addProgramItem({
-                    time_en: fd.get('time_en') as string,
-                    time_km: fd.get('time_km') as string,
-                    title_en: fd.get('title_en') as string,
-                    title_km: fd.get('title_km') as string,
+                    ...payload,
                     order_index: data.programSchedule.length,
                   });
-                  (e.target as HTMLFormElement).reset();
-                  toast.success('Program item added!');
+                  form.reset();
+                  toast.success('Program item added to backend!');
                 } catch (err: any) {
                   toast.error('Failed to add: ' + (err.message || 'Unknown error'));
                 }
@@ -645,7 +656,14 @@ export default function AdminDashboard() {
                     </div>
                     {item.id && (
                       <button
-                        onClick={() => { data.removeProgramItem(item.id!); toast.success('Item removed'); }}
+                        onClick={async () => {
+                          try {
+                            await data.removeProgramItem(item.id!);
+                            toast.success('Item removed');
+                          } catch (err: any) {
+                            toast.error('Failed to remove: ' + (err.message || 'Unknown error'));
+                          }
+                        }}
                         className="text-xs text-destructive hover:bg-destructive/10 rounded-full px-3 py-1.5 transition-colors flex-shrink-0"
                       >
                         Delete
@@ -656,7 +674,7 @@ export default function AdminDashboard() {
               </div>
             )}
             {data.programSchedule.length === 0 && (
-              <p className="text-muted-foreground text-center py-8">No program items yet. Default schedule will be shown.</p>
+              <p className="text-muted-foreground text-center py-8">No backend program items yet. Add at least one item so guest links show your real schedule.</p>
             )}
           </div>
         )}
