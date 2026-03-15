@@ -2,9 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 export default function ContactSection() {
   const { t, lang } = useLanguage();
@@ -19,35 +18,35 @@ export default function ContactSection() {
 
   return (
     <motion.section
-      className="py-24 px-6"
+      className="py-14 sm:py-20 px-5"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
       <div className="max-w-md mx-auto text-center">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('contact.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
+        <div className="section-divider mb-8" />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {contacts.map((c, i) => (
             <motion.a
               key={c.label}
               href={c.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-card rounded-2xl p-5 flex flex-col items-center gap-2 hover:shadow-lg transition-all"
-              initial={{ opacity: 0, y: 20 }}
+              className="luxury-card rounded-2xl p-4 flex flex-col items-center gap-2 hover:shadow-luxury transition-all"
+              initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ ...spring, delay: i * 0.1 }}
-              whileHover={{ scale: 1.05, y: -2 }}
+              transition={{ ...spring, delay: i * 0.08 }}
+              whileHover={{ scale: 1.04, y: -2 }}
               whileTap={{ scale: 0.97 }}
             >
-              <span className="text-3xl">{c.icon}</span>
-              <span className="text-sm font-medium text-foreground">{c.label}</span>
+              <span className="text-2xl">{c.icon}</span>
+              <span className="text-xs font-medium text-foreground">{c.label}</span>
             </motion.a>
           ))}
         </div>

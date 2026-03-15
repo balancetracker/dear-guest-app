@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 function useCountdown(dateStr: string) {
   const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -28,22 +27,15 @@ function useCountdown(dateStr: string) {
 
 function generateICSUrl(settings: { weddingDateTime: string; coupleNames: string; venueName: string }) {
   const start = new Date(settings.weddingDateTime);
-  const end = new Date(start.getTime() + 4 * 3600000); // 4 hours
+  const end = new Date(start.getTime() + 4 * 3600000);
   const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-  
   const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'BEGIN:VEVENT',
-    `DTSTART:${fmt(start)}`,
-    `DTEND:${fmt(end)}`,
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+    `DTSTART:${fmt(start)}`, `DTEND:${fmt(end)}`,
     `SUMMARY:${settings.coupleNames} Wedding`,
-    `LOCATION:${settings.venueName}`,
-    'DESCRIPTION:Wedding Ceremony',
-    'END:VEVENT',
-    'END:VCALENDAR',
+    `LOCATION:${settings.venueName}`, 'DESCRIPTION:Wedding Ceremony',
+    'END:VEVENT', 'END:VCALENDAR',
   ].join('\r\n');
-  
   return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
 }
 
@@ -56,11 +48,9 @@ export default function DetailsSection() {
   const dateDisplay = lang === 'km' ? settings.weddingDateKm : settings.weddingDate;
   const timeDisplay = lang === 'km' ? settings.weddingTimeKm : settings.weddingTime;
   const venueDisplay = lang === 'km' ? settings.venueNameKm : settings.venueName;
-
   const icsUrl = generateICSUrl(settings);
 
   const handleAddToCalendar = () => {
-    // Try to download .ics file which will open in phone's calendar app
     const a = document.createElement('a');
     a.href = icsUrl;
     a.download = 'wedding.ics';
@@ -69,19 +59,19 @@ export default function DetailsSection() {
 
   return (
     <motion.section
-      className="py-24 px-6"
+      className="py-14 sm:py-20 px-5"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
       <div className="max-w-lg mx-auto text-center">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('details.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
+        <div className="section-divider mb-8" />
 
-        <div className="grid grid-cols-1 gap-4 mb-10">
+        <div className="grid grid-cols-1 gap-3 mb-8">
           {[
             { label: t('details.date'), value: dateDisplay, icon: '📅' },
             { label: t('details.time'), value: timeDisplay, icon: '🕐' },
@@ -89,24 +79,24 @@ export default function DetailsSection() {
           ].map((item, i) => (
             <motion.div
               key={i}
-              className="glass-card rounded-2xl p-6 flex items-center gap-4"
-              initial={{ opacity: 0, x: i % 2 === 0 ? -20 : 20 }}
+              className="luxury-card rounded-2xl p-4 sm:p-5 flex items-center gap-4"
+              initial={{ opacity: 0, x: i % 2 === 0 ? -15 : 15 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ ...spring, delay: i * 0.1 }}
             >
-              <span className="text-3xl">{item.icon}</span>
+              <span className="text-2xl">{item.icon}</span>
               <div className="text-left">
-                <p className={`text-sm text-muted-foreground ${fontClass}`}>{item.label}</p>
-                <p className={`text-lg font-semibold text-foreground ${fontClass}`}>{item.value}</p>
+                <p className={`text-xs text-muted-foreground ${fontClass}`}>{item.label}</p>
+                <p className={`text-sm sm:text-base font-semibold text-foreground ${fontClass}`}>{item.value}</p>
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Countdown */}
-        <p className={`text-muted-foreground mb-4 ${fontClass}`}>{t('details.countdown')}</p>
-        <div className="grid grid-cols-4 gap-3 mb-8">
+        <p className={`text-muted-foreground text-sm mb-3 ${fontClass}`}>{t('details.countdown')}</p>
+        <div className="grid grid-cols-4 gap-2 sm:gap-3 mb-6">
           {[
             { val: countdown.days, label: t('details.days') },
             { val: countdown.hours, label: t('details.hours') },
@@ -115,18 +105,19 @@ export default function DetailsSection() {
           ].map(({ val, label }) => (
             <motion.div
               key={label}
-              className="glass-card rounded-2xl p-4"
-              whileHover={{ scale: 1.05 }}
+              className="luxury-card rounded-xl p-3 sm:p-4"
+              whileHover={{ scale: 1.03 }}
             >
-              <div className="text-3xl font-display font-bold text-foreground">{val}</div>
-              <div className={`text-xs text-muted-foreground mt-1 ${fontClass}`}>{label}</div>
+              <div className="text-2xl sm:text-3xl font-display font-bold gold-text">{val}</div>
+              <div className={`text-[10px] sm:text-xs text-muted-foreground mt-1 ${fontClass}`}>{label}</div>
             </motion.div>
           ))}
         </div>
 
         <motion.button
           onClick={handleAddToCalendar}
-          className={`inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 font-display text-lg shadow-surface ${fontClass}`}
+          className={`inline-flex items-center gap-2 rounded-full min-h-[44px] px-6 py-2.5 text-sm shadow-luxury gold-border ${fontClass}`}
+          style={{ background: 'linear-gradient(135deg, hsl(38 55% 58%), hsl(38 60% 48%))', color: 'white' }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >

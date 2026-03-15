@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import confetti from 'canvas-confetti';
-import floralCorner from '@/assets/floral-corner.png';
 
 interface EnvelopeProps {
   guestName: string;
@@ -10,58 +9,27 @@ interface EnvelopeProps {
   isOpen: boolean;
 }
 
-const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.6, bounce: 0.08 };
 
 function launchFireworks() {
-  const duration = 3000;
+  const colors = ['#D4A76A', '#E8C8A0', '#F4C2C2', '#C9A96E', '#F0D5B8', '#E0B4A5'];
+  const duration = 2500;
   const end = Date.now() + duration;
-  const colors = ['#f9a8d4', '#fbbf24', '#f472b6', '#fb923c', '#a78bfa', '#34d399'];
 
   const frame = () => {
-    confetti({
-      particleCount: 3,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.7 },
-      colors
-    });
-    confetti({
-      particleCount: 3,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.7 },
-      colors
-    });
+    confetti({ particleCount: 2, angle: 60, spread: 50, origin: { x: 0, y: 0.7 }, colors });
+    confetti({ particleCount: 2, angle: 120, spread: 50, origin: { x: 1, y: 0.7 }, colors });
     if (Date.now() < end) requestAnimationFrame(frame);
   };
   frame();
 
-  // Big center burst
   setTimeout(() => {
-    confetti({
-      particleCount: 100,
-      spread: 100,
-      origin: { y: 0.5 },
-      colors,
-      startVelocity: 45,
-      gravity: 0.8,
-      shapes: ['circle', 'square'],
-      scalar: 1.2
-    });
+    confetti({ particleCount: 80, spread: 90, origin: { y: 0.5 }, colors, startVelocity: 40, gravity: 0.9, scalar: 1.1 });
   }, 200);
 
-  // Star bursts
-  [600, 1200, 1800].forEach((delay) => {
+  [500, 1000, 1500].forEach((delay) => {
     setTimeout(() => {
-      confetti({
-        particleCount: 50,
-        spread: 360,
-        origin: { x: Math.random(), y: Math.random() * 0.5 },
-        colors,
-        startVelocity: 30,
-        gravity: 1,
-        ticks: 80
-      });
+      confetti({ particleCount: 30, spread: 360, origin: { x: Math.random(), y: Math.random() * 0.4 + 0.1 }, colors, startVelocity: 25, ticks: 60 });
     }, delay);
   });
 }
@@ -78,68 +46,60 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
     <AnimatePresence>
       {!isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-background via-background to-primary/10"
-          exit={{ opacity: 0, scale: 1.1 }}
-          transition={{ duration: 0.6 }}
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            background: 'radial-gradient(ellipse at center, hsl(36 33% 97%) 0%, hsl(36 30% 93%) 50%, hsl(345 20% 90%) 100%)',
+          }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 0.8 }}
         >
-          {/* Floating emojis */}
-          {['🌼', '🌸', '🌺', '💐', '🌷', '✨', '🌼', '🌸'].map((emoji, i) => (
-            <motion.span
+          {/* Subtle gold glow */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-gold-light/10 blur-[120px]" />
+
+          {/* Corner ornaments */}
+          {['top-4 left-4', 'top-4 right-4 scale-x-[-1]', 'bottom-4 left-4 scale-y-[-1]', 'bottom-4 right-4 scale-[-1]'].map((pos, i) => (
+            <motion.div
               key={i}
-              className="absolute text-2xl opacity-30 pointer-events-none"
-              style={{
-                top: `${10 + Math.random() * 80}%`,
-                left: `${5 + Math.random() * 90}%`,
-              }}
-              animate={{
-                y: [0, -15, 0],
-                rotate: [0, 10, -10, 0],
-                opacity: [0.2, 0.4, 0.2],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: i * 0.5,
-              }}
+              className={`absolute ${pos} text-gold/20 text-3xl sm:text-4xl`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 + i * 0.1 }}
             >
-              {emoji}
-            </motion.span>
+              ❋
+            </motion.div>
           ))}
 
-          {/* Floral corners */}
-          <img src={floralCorner} alt="" className="absolute top-0 left-0 w-28 md:w-40 opacity-40 pointer-events-none" />
-          <img src={floralCorner} alt="" className="absolute top-0 right-0 w-28 md:w-40 opacity-40 pointer-events-none scale-x-[-1]" />
-          <img src={floralCorner} alt="" className="absolute bottom-0 left-0 w-28 md:w-40 opacity-40 pointer-events-none scale-y-[-1]" />
-          <img src={floralCorner} alt="" className="absolute bottom-0 right-0 w-28 md:w-40 opacity-40 pointer-events-none scale-[-1]" />
-
           <motion.div
-            className="flex flex-col items-center gap-6"
-            initial={{ scale: 0.8, opacity: 0 }}
+            className="flex flex-col items-center gap-8 px-6"
+            initial={{ scale: 0.85, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ ...spring, duration: 0.8 }}
+            transition={{ ...spring, duration: 1 }}
           >
             {/* Envelope */}
             <motion.div
-              className="relative w-72 h-48 md:w-96 md:h-64 cursor-pointer"
-              whileHover={{ scale: 1.03, y: -5 }}
+              className="relative w-72 h-44 sm:w-80 sm:h-48 cursor-pointer"
+              whileHover={{ scale: 1.02, y: -3 }}
               onClick={handleOpen}
             >
-              {/* Envelope body */}
-              <div className="absolute inset-0 rounded-2xl bg-primary/30 border border-primary/50 shadow-xl backdrop-blur-sm" />
+              {/* Body */}
+              <div className="absolute inset-0 rounded-2xl luxury-card gold-border" />
 
-              {/* Envelope flap */}
+              {/* Flap */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-1/2 bg-primary/20 backdrop-blur-sm rounded-t-2xl origin-top"
-                style={{ transformStyle: 'preserve-3d' }}
+                className="absolute top-0 left-0 right-0 h-1/2 rounded-t-2xl origin-top overflow-hidden"
+                style={{ 
+                  background: 'linear-gradient(135deg, rgba(212,167,106,.15), rgba(212,167,106,.08))',
+                  borderBottom: '1px solid rgba(212,167,106,.1)',
+                }}
                 initial={{ rotateX: 0 }}
-                whileHover={{ rotateX: -20 }}
+                whileHover={{ rotateX: -15 }}
                 transition={spring}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.span
-                    className="text-3xl"
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-2xl"
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{ duration: 2.5, repeat: Infinity }}
                   >
                     💌
                   </motion.span>
@@ -147,31 +107,35 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
               </motion.div>
 
               {/* Card inside */}
-              <div className="absolute inset-4 top-8 bg-card/90 backdrop-blur-sm rounded-xl border border-border/30 flex flex-col items-center justify-center p-4 text-center shadow-sm">
-                <p className={`text-sm text-muted-foreground ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}>
+              <div className="absolute inset-3 top-6 bg-ivory/90 backdrop-blur-sm rounded-xl gold-border flex flex-col items-center justify-center p-4 text-center">
+                <p className={`text-xs text-muted-foreground tracking-widest uppercase ${lang === 'km' ? 'font-khmer text-sm tracking-normal' : 'font-sans'}`}>
                   {t('envelope.to')}
                 </p>
-                <p className={`text-2xl md:text-3xl font-semibold text-foreground mt-1 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+                <p className={`text-xl sm:text-2xl font-bold text-foreground mt-1 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
                   {guestName || t('greeting.guest')}
                 </p>
-                <motion.div
-                  className="mt-2 text-xl"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                <motion.span
+                  className="mt-1 text-lg text-gold"
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  💕
-                </motion.div>
+                  ♡
+                </motion.span>
               </div>
             </motion.div>
 
             {/* Open button */}
             <motion.button
               onClick={handleOpen}
-              className={`min-h-[48px] px-10 py-3 text-lg shadow-lg hover:shadow-xl transition-all bg-primary text-primary-foreground rounded-full ${lang === 'km' ? 'font-khmer' : 'font-sans'}`}
-              whileHover={{ scale: 1.05, y: -2 }}
+              className={`min-h-[48px] px-10 py-3 text-base shadow-luxury transition-all rounded-full gold-border ${lang === 'km' ? 'font-khmer' : 'font-display'}`}
+              style={{
+                background: 'linear-gradient(135deg, hsl(38 55% 58%), hsl(38 60% 48%))',
+                color: 'white',
+              }}
+              whileHover={{ scale: 1.04, y: -2, boxShadow: '0 8px 30px rgba(212,167,106,.3)' }}
               whileTap={{ scale: 0.97 }}
-              transition={spring}
               animate={{ y: [0, -3, 0] }}
+              transition={{ y: { duration: 3, repeat: Infinity, ease: 'easeInOut' }, ...spring }}
             >
               ✨ {t('hero.open')}
             </motion.button>
@@ -180,5 +144,4 @@ export default function EnvelopeAnimation({ guestName, onOpen, isOpen }: Envelop
       )}
     </AnimatePresence>
   );
-
 }

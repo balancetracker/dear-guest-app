@@ -3,9 +3,8 @@ import { motion } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import { toast } from 'sonner';
-import divider from '@/assets/divider.png';
 
-const spring = { type: "spring" as const, duration: 0.8, bounce: 0.1 };
+const spring = { type: "spring" as const, duration: 0.8, bounce: 0.08 };
 
 export default function GiftSection() {
   const { t, lang } = useLanguage();
@@ -23,40 +22,38 @@ export default function GiftSection() {
 
   return (
     <motion.section
-      className="py-24 px-6 bg-card/50"
+      className="py-14 sm:py-20 px-5 bg-champagne/30"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={spring}
     >
       <div className="max-w-md mx-auto text-center">
-        <h2 className={`text-3xl md:text-4xl font-semibold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
+        <h2 className={`text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 ${lang === 'km' ? 'font-khmer' : 'font-display'}`}>
           {t('gift.title')}
         </h2>
-        <img src={divider} alt="" className="w-32 mx-auto opacity-50 mb-10" />
+        <div className="section-divider mb-8" />
 
-        <motion.div
-          className="glass-card rounded-3xl p-8 mb-6"
-          whileHover={{ scale: 1.01 }}
-        >
-          <div className="text-4xl mb-4">🎁</div>
+        <motion.div className="luxury-card rounded-3xl p-6 sm:p-8 mb-5" whileHover={{ scale: 1.005 }}>
+          <div className="text-3xl mb-3">🎁</div>
           
           {bankQR && (
-            <div className="mb-6">
-              <img src={bankQR} alt="Bank QR Code" className="w-56 h-56 object-contain mx-auto rounded-2xl shadow-surface" />
+            <div className="mb-5">
+              <img src={bankQR} alt="Bank QR Code" className="w-48 h-48 object-contain mx-auto rounded-2xl shadow-luxury" />
             </div>
           )}
 
-          <p className={`text-sm text-muted-foreground mb-1 ${fontClass}`}>{t('gift.bank')}</p>
-          <p className="text-xl font-semibold text-foreground">{bankName}</p>
-          <div className="mt-3 bg-background/50 rounded-xl py-3 px-4 inline-block">
-            <p className="text-2xl font-display font-bold text-foreground tracking-wider">{bankAccount}</p>
+          <p className={`text-xs text-muted-foreground mb-1 ${fontClass}`}>{t('gift.bank')}</p>
+          <p className="text-lg font-semibold text-foreground">{bankName}</p>
+          <div className="mt-2 bg-ivory/80 rounded-xl py-2.5 px-4 inline-block gold-border">
+            <p className="text-xl font-display font-bold gold-text tracking-wider">{bankAccount}</p>
           </div>
         </motion.div>
 
         <motion.button
           onClick={copyAccount}
-          className={`bg-accent text-accent-foreground rounded-full min-h-[48px] px-6 py-3 font-display shadow-surface ${fontClass}`}
+          className={`rounded-full min-h-[44px] px-6 py-2.5 text-sm shadow-luxury gold-border ${fontClass}`}
+          style={{ background: 'linear-gradient(135deg, hsl(38 55% 58%), hsl(38 60% 48%))', color: 'white' }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
