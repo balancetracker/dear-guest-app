@@ -137,6 +137,7 @@ export default function AdminDashboard() {
     { key: 'wishes', label: 'Wishes', icon: '💌' },
     { key: 'photos', label: 'Photos', icon: '📸' },
     { key: 'wedding', label: 'Info', icon: '💍' },
+    { key: 'program', label: 'Program', icon: '📋' },
     { key: 'map', label: 'Map', icon: '📍' },
     { key: 'bank', label: 'Bank', icon: '🏦' },
     { key: 'contacts', label: 'Contact', icon: '📱' },
