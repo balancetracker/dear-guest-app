@@ -15,6 +15,15 @@ export interface Wish {
   timestamp: number;
 }
 
+export interface ProgramItem {
+  id?: string;
+  time_en: string | null;
+  time_km: string | null;
+  title_en: string | null;
+  title_km: string | null;
+  order_index?: number;
+}
+
 export interface WeddingSettings {
   coupleNames: string;
   coupleNamesKm: string;
@@ -48,6 +57,7 @@ interface WeddingData {
   bankAccount: string;
   bankQR: string;
   settings: WeddingSettings;
+  programSchedule: ProgramItem[];
   addGuest: (name: string) => void;
   removeGuest: (id: string) => void;
   updateRSVP: (name: string, status: 'attending' | 'not_attending', numGuests: number) => void;
@@ -56,6 +66,9 @@ interface WeddingData {
   removePhoto: (url: string) => void;
   setBankInfo: (name: string, account: string, qr: string) => void;
   updateSettings: (s: Partial<WeddingSettings>) => void;
+  addProgramItem: (item: Omit<ProgramItem, 'id'>) => void;
+  removeProgramItem: (id: string) => void;
+  updateProgramItem: (id: string, item: Partial<ProgramItem>) => void;
 }
 
 const WeddingDataContext = createContext<WeddingData | null>(null);
