@@ -56,10 +56,7 @@ export default function InvitationPage() {
 
               {/* Footer */}
               <footer className="py-12 text-center text-muted-foreground text-sm">
-                <p className="font-display text-lg mb-2">Made with ❤️</p>
-                <a href="/admin" className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-                  Admin
-                </a>
+                <p className="font-display text-lg">Made with ❤️</p>
               </footer>
             </main>
           </>
