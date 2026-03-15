@@ -583,18 +583,22 @@ export default function AdminDashboard() {
               <h3 className="font-display text-lg font-semibold text-foreground">📋 Wedding Program Schedule</h3>
               <p className="text-sm text-muted-foreground">Add and manage the ceremony schedule items shown on the invitation.</p>
               
-              <form onSubmit={e => {
+              <form onSubmit={async e => {
                 e.preventDefault();
                 const fd = new FormData(e.target as HTMLFormElement);
-                data.addProgramItem({
-                  time_en: fd.get('time_en') as string,
-                  time_km: fd.get('time_km') as string,
-                  title_en: fd.get('title_en') as string,
-                  title_km: fd.get('title_km') as string,
-                  order_index: data.programSchedule.length,
-                });
-                (e.target as HTMLFormElement).reset();
-                toast.success('Program item added!');
+                try {
+                  await data.addProgramItem({
+                    time_en: fd.get('time_en') as string,
+                    time_km: fd.get('time_km') as string,
+                    title_en: fd.get('title_en') as string,
+                    title_km: fd.get('title_km') as string,
+                    order_index: data.programSchedule.length,
+                  });
+                  (e.target as HTMLFormElement).reset();
+                  toast.success('Program item added!');
+                } catch (err: any) {
+                  toast.error('Failed to add: ' + (err.message || 'Unknown error'));
+                }
               }} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
