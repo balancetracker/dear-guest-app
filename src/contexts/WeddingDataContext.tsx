@@ -332,13 +332,14 @@ export function WeddingDataProvider({ children }: { children: ReactNode }) {
   }, [settingsId]);
 
   const addProgramItem = useCallback(async (item: Omit<ProgramItem, 'id'>) => {
-    await supabase.from('program_schedule').insert({
+    const { error } = await supabase.from('program_schedule').insert({
       time_en: item.time_en,
       time_km: item.time_km,
       title_en: item.title_en,
       title_km: item.title_km,
       order_index: item.order_index || programSchedule.length,
     });
+    if (error) throw error;
   }, [programSchedule.length]);
 
   const removeProgramItem = useCallback(async (id: string) => {
