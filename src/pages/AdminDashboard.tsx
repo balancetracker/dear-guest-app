@@ -84,6 +84,7 @@ function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
+  const { theme, setTheme } = useTheme();
   const [newGuest, setNewGuest] = useState('');
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
