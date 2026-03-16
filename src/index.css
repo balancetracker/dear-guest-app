@@ -52,57 +52,6 @@
     --glass-shadow: 0 8px 32px rgba(139,109,71,.06);
   }
 
-  /* ===== PINK THEME ===== */
-  [data-theme="pink"] {
-    --primary: 340 55% 68%;
-    --primary-foreground: 340 40% 15%;
-    --accent: 350 50% 62%;
-    --accent-foreground: 350 60% 12%;
-    --ring: 340 55% 60%;
-    --gold: 350 55% 62%;
-    --gold-light: 345 60% 80%;
-    --rose-gold: 340 50% 72%;
-    --champagne: 345 40% 90%;
-    --blush: 340 50% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(200,100,130,.12), 0 12px 40px -12px rgba(200,100,130,.08);
-    --shadow-glow: 0 0 40px rgba(220,130,160,.15);
-    --glass-border: rgba(220,130,160,.15);
-  }
-
-  /* ===== LAVENDER THEME ===== */
-  [data-theme="lavender"] {
-    --primary: 270 40% 68%;
-    --primary-foreground: 270 30% 15%;
-    --accent: 275 45% 58%;
-    --accent-foreground: 275 50% 12%;
-    --ring: 270 40% 60%;
-    --gold: 275 45% 58%;
-    --gold-light: 270 50% 78%;
-    --rose-gold: 280 40% 72%;
-    --champagne: 270 30% 90%;
-    --blush: 275 35% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(150,100,200,.12), 0 12px 40px -12px rgba(150,100,200,.08);
-    --shadow-glow: 0 0 40px rgba(170,130,220,.15);
-    --glass-border: rgba(170,130,220,.15);
-  }
-
-  /* ===== RAINBOW THEME ===== */
-  [data-theme="rainbow"] {
-    --primary: 350 50% 72%;
-    --primary-foreground: 350 30% 15%;
-    --accent: 170 40% 55%;
-    --accent-foreground: 170 50% 12%;
-    --ring: 200 50% 60%;
-    --gold: 45 60% 55%;
-    --gold-light: 120 40% 75%;
-    --rose-gold: 300 40% 72%;
-    --champagne: 60 40% 90%;
-    --blush: 200 35% 88%;
-    --shadow-luxury: 0 4px 20px -4px rgba(150,150,200,.12), 0 12px 40px -12px rgba(150,150,200,.08);
-    --shadow-glow: 0 0 40px rgba(180,160,220,.15);
-    --glass-border: rgba(180,160,220,.15);
-  }
-
   * {
     @apply border-border;
   }
@@ -129,18 +78,6 @@
 @layer utilities {
   .font-khmer {
     font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 1.05em;
-    line-height: 1.8;
-    letter-spacing: 0.01em;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Khmer heading sizes - bigger and bolder */
-  h1.font-khmer, h2.font-khmer, h3.font-khmer {
-    font-family: 'Kantumruy Pro', sans-serif;
-    font-size: 1.15em;
-    line-height: 1.4;
-    font-weight: 700;
   }
 
   .font-display {
@@ -175,7 +112,7 @@
     background: linear-gradient(145deg, rgba(255,253,248,.85), rgba(255,249,240,.7));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(212,167,106,.15);
     box-shadow: var(--shadow-luxury);
   }
 
