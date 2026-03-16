@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
 import heroBg from '@/assets/hero-bg.jpg';
@@ -16,6 +16,7 @@ interface HeroPetal {
 
 function HeroPetals() {
   const [petals, setPetals] = useState<HeroPetal[]>([]);
+
   useEffect(() => {
     setPetals(Array.from({ length: 12 }, (_, i) => ({
       id: i,
@@ -28,7 +29,7 @@ function HeroPetals() {
 
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-[2]">
-      {petals.map(p => (
+      {petals.map((p) => (
         <span
           key={p.id}
           className="absolute animate-petal-fall"
@@ -50,8 +51,16 @@ function HeroPetals() {
 }
 
 export default function HeroSection() {
-  const { t, lang } = useLanguage();
+  const { lang } = useLanguage();
   const { settings } = useWeddingData();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end start'] });
+
+  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '14%']);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1.06, 1.18]);
+  const glowY = useTransform(scrollYProgress, [0, 1], [0, 90]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.38]);
 
   const names = lang === 'km' ? settings.coupleNamesKm : settings.coupleNames;
   const date = lang === 'km' ? settings.weddingDateKm : settings.weddingDate;
@@ -59,29 +68,33 @@ export default function HeroSection() {
 
   return (
     <motion.section
+      ref={sectionRef}
       className="relative min-h-[100svh] flex flex-col items-center justify-center text-center overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.5 }}
     >
-      {/* Background image */}
-      <div className="absolute inset-0">
-        <img src={bgImage} alt="" className="w-full h-full object-cover scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/20 via-background/50 to-background" />
+      <motion.div className="absolute inset-0 will-change-transform" style={{ y: bgY, scale: bgScale }}>
+        <img src={bgImage} alt="Wedding hero background" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/20 via-background/45 to-background" />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-      </div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(var(--ivory)/0.55),transparent_34%),radial-gradient(circle_at_70%_20%,hsl(var(--primary)/0.18),transparent_24%)]" />
+      </motion.div>
 
-      {/* Contained petals */}
       <HeroPetals />
 
-      {/* Glow effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-gold-light/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] rounded-full bg-primary/10 blur-[80px] pointer-events-none" />
+      <motion.div
+        className="absolute top-[18%] left-1/2 h-[20rem] w-[20rem] -translate-x-1/2 rounded-full bg-gold-light/15 blur-[110px] pointer-events-none"
+        style={{ y: glowY }}
+      />
+      <motion.div
+        className="absolute bottom-[12%] left-[18%] h-[13rem] w-[13rem] rounded-full bg-primary/15 blur-[90px] pointer-events-none"
+        style={{ y: glowY }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 px-6 max-w-lg">
+      <motion.div className="relative z-10 max-w-lg px-6 sm:px-8" style={{ y: contentY, opacity: contentOpacity }}>
         <motion.p
-          className={`text-muted-foreground/80 text-xs tracking-[0.35em] uppercase mb-8 ${lang === 'km' ? 'font-khmer text-sm' : 'font-sans'}`}
+          className={`mb-8 text-xs uppercase tracking-[0.35em] text-muted-foreground/80 ${lang === 'km' ? 'font-khmer text-sm' : 'font-sans'}`}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.3 }}
@@ -90,7 +103,7 @@ export default function HeroSection() {
         </motion.p>
 
         <motion.h1
-          className={`${lang === 'km' ? 'text-4xl sm:text-5xl font-khmer leading-tight' : 'text-5xl sm:text-6xl md:text-7xl font-display'} font-bold text-foreground mb-4`}
+          className={`${lang === 'km' ? 'text-4xl sm:text-5xl font-khmer leading-tight' : 'text-5xl sm:text-6xl md:text-7xl font-display'} mb-4 font-bold text-foreground`}
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.5 }}
@@ -104,13 +117,13 @@ export default function HeroSection() {
           animate={{ scaleX: 1, opacity: 1 }}
           transition={{ ...spring, delay: 0.7 }}
         >
-          <div className="section-divider flex-1 max-w-[60px]" />
-          <span className="text-gold text-lg animate-gentle-float">✦</span>
-          <div className="section-divider flex-1 max-w-[60px]" />
+          <div className="hero-line flex-1 max-w-[72px]" />
+          <span className="animate-gentle-float text-lg text-gold">✦</span>
+          <div className="hero-line flex-1 max-w-[72px]" />
         </motion.div>
 
         <motion.p
-          className={`${lang === 'km' ? 'text-base font-khmer' : 'text-lg font-display italic'} text-muted-foreground`}
+          className={`${lang === 'km' ? 'text-base font-khmer' : 'font-display text-lg italic'} text-muted-foreground`}
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ ...spring, delay: 0.9 }}
@@ -125,7 +138,7 @@ export default function HeroSection() {
           transition={{ ...spring, delay: 1.2 }}
         >
           <motion.div
-            className="inline-flex items-center gap-2 glass-strong rounded-full px-5 py-2 text-sm text-muted-foreground"
+            className="glass-strong inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm text-muted-foreground"
             animate={{ y: [0, -4, 0] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           >
@@ -135,7 +148,7 @@ export default function HeroSection() {
             </span>
           </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
     </motion.section>
   );
 }

@@ -18,6 +18,7 @@ import RSVPSection from '@/components/wedding/RSVPSection';
 import GiftSection from '@/components/wedding/GiftSection';
 import ContactSection from '@/components/wedding/ContactSection';
 import WishesSection from '@/components/wedding/WishesSection';
+import SectionReveal from '@/components/wedding/SectionReveal';
 
 export default function InvitationPage() {
   const [searchParams] = useSearchParams();
@@ -44,21 +45,22 @@ export default function InvitationPage() {
 
             <main className="relative z-[1]">
               <HeroSection />
-              <GreetingSection guestName={guestName} />
-              <DetailsSection />
-              <TimelineSection />
-              <GallerySection />
-              <MapSection />
-              <RSVPSection guestName={guestName} />
-              <GiftSection />
-              <WishesSection />
-              <ContactSection />
+              <SectionReveal><GreetingSection guestName={guestName} /></SectionReveal>
+              <SectionReveal><DetailsSection /></SectionReveal>
+              <SectionReveal><TimelineSection /></SectionReveal>
+              <SectionReveal><GallerySection /></SectionReveal>
+              <SectionReveal><MapSection /></SectionReveal>
+              <SectionReveal><RSVPSection guestName={guestName} /></SectionReveal>
+              <SectionReveal><GiftSection /></SectionReveal>
+              <SectionReveal><WishesSection /></SectionReveal>
+              <SectionReveal><ContactSection /></SectionReveal>
 
-              {/* Footer */}
-              <footer className="py-10 text-center">
-                <div className="section-divider mb-4" />
-                <p className="font-display text-sm text-muted-foreground italic">Made with love ♡</p>
-              </footer>
+              <SectionReveal>
+                <footer className="pb-10 pt-6 text-center">
+                  <div className="section-divider mb-4" />
+                  <p className="font-display text-sm italic text-muted-foreground">Made with love ♡</p>
+                </footer>
+              </SectionReveal>
             </main>
           </>
         )}
