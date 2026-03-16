@@ -45,6 +45,9 @@ function isValidTheme(t: string): t is ThemeName {
   return VALID_THEMES.includes(t as ThemeName);
 }
 
+// Use any-typed client to avoid strict type issues with unsynced schema
+const db = supabase as any;
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeName>(() => {
     try {
@@ -59,7 +62,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const { data } = await supabase
+        const { data } = await db
           .from('settings')
           .select('theme')
           .limit(1)
@@ -80,9 +83,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   // Listen for realtime theme changes
   useEffect(() => {
-    const channel = supabase
+    const channel = db
       .channel('theme-changes')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload: any) => {
         const newTheme = payload.new?.theme;
         if (newTheme && isValidTheme(newTheme)) {
           setThemeState(newTheme as ThemeName);
@@ -91,7 +94,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { db.removeChannel(channel); };
   }, []);
 
   const setTheme = useCallback(async (t: ThemeName) => {
@@ -100,16 +103,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     // Save to database
     try {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('settings')
         .select('id')
         .limit(1)
         .single();
 
       if (existing?.id) {
-        await supabase
+        await db
           .from('settings')
-          .update({ theme: t } as any)
+          .update({ theme: t })
           .eq('id', existing.id);
       }
     } catch {
