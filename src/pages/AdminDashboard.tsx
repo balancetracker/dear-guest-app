@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
+import { useTheme, THEME_INFO, ThemeName } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/supabase-storage';
 
