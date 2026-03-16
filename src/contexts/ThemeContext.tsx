@@ -1,15 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type ThemeName = 'gold' | 'pink' | 'lavender' | 'rainbow';
 
 interface ThemeContextType {
   theme: ThemeName;
   setTheme: (t: ThemeName) => void;
+  loading: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 const STORAGE_KEY = 'wedding-theme';
+const VALID_THEMES: ThemeName[] = ['gold', 'pink', 'lavender', 'rainbow'];
 
 export const THEME_INFO: Record<ThemeName, { label: string; emoji: string; description: string; colors: string[] }> = {
   gold: {
@@ -38,26 +41,88 @@ export const THEME_INFO: Record<ThemeName, { label: string; emoji: string; descr
   },
 };
 
+function isValidTheme(t: string): t is ThemeName {
+  return VALID_THEMES.includes(t as ThemeName);
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeName>(() => {
     try {
-      return (localStorage.getItem(STORAGE_KEY) as ThemeName) || 'gold';
-    } catch {
-      return 'gold';
-    }
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored && isValidTheme(stored)) return stored;
+    } catch {}
+    return 'gold';
   });
+  const [loading, setLoading] = useState(true);
 
-  const setTheme = (t: ThemeName) => {
+  // Load theme from database on mount
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const { data } = await supabase
+          .from('settings')
+          .select('theme')
+          .limit(1)
+          .single();
+
+        if (data?.theme && isValidTheme(data.theme)) {
+          setThemeState(data.theme as ThemeName);
+          try { localStorage.setItem(STORAGE_KEY, data.theme); } catch {}
+        }
+      } catch {
+        // Column may not exist yet, use localStorage fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadTheme();
+  }, []);
+
+  // Listen for realtime theme changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('theme-changes')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'settings' }, (payload) => {
+        const newTheme = payload.new?.theme;
+        if (newTheme && isValidTheme(newTheme)) {
+          setThemeState(newTheme as ThemeName);
+          try { localStorage.setItem(STORAGE_KEY, newTheme); } catch {}
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const setTheme = useCallback(async (t: ThemeName) => {
     setThemeState(t);
     try { localStorage.setItem(STORAGE_KEY, t); } catch {}
-  };
+
+    // Save to database
+    try {
+      const { data: existing } = await supabase
+        .from('settings')
+        .select('id')
+        .limit(1)
+        .single();
+
+      if (existing?.id) {
+        await supabase
+          .from('settings')
+          .update({ theme: t } as any)
+          .eq('id', existing.id);
+      }
+    } catch {
+      // Column may not exist yet
+    }
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, loading }}>
       {children}
     </ThemeContext.Provider>
   );
