@@ -9,7 +9,7 @@ import { uploadFile } from '@/lib/supabase-storage';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
-type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'program' | 'map' | 'bank' | 'contacts' | 'music';
+type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'program' | 'map' | 'bank' | 'contacts' | 'music' | 'theme';
 
 function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
   onUpload: (url: string) => void;
