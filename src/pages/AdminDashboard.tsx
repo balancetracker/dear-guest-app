@@ -144,6 +144,7 @@ export default function AdminDashboard() {
     { key: 'bank', label: 'Bank', icon: '🏦' },
     { key: 'contacts', label: 'Contact', icon: '📱' },
     { key: 'music', label: 'Music', icon: '🎵' },
+    { key: 'theme', label: 'Theme', icon: '🎨' },
   ];
 
   const inputClass = "w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring";
