@@ -3,12 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { useWeddingData } from '@/contexts/WeddingDataContext';
+import { useTheme, THEME_INFO, ThemeName } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 import { uploadFile } from '@/lib/supabase-storage';
 
 const spring = { type: "spring" as const, duration: 0.5, bounce: 0.1 };
 
-type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'program' | 'map' | 'bank' | 'contacts' | 'music';
+type Tab = 'guests' | 'rsvp' | 'wishes' | 'photos' | 'wedding' | 'program' | 'map' | 'bank' | 'contacts' | 'music' | 'theme';
 
 function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
   onUpload: (url: string) => void;
@@ -83,6 +84,7 @@ function ImageUpload({ onUpload, label, current, accept, bucket, maxSize }: {
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('guests');
   const data = useWeddingData();
+  const { theme, setTheme } = useTheme();
   const [newGuest, setNewGuest] = useState('');
   const [selectedQR, setSelectedQR] = useState<string | null>(null);
 
@@ -142,6 +144,7 @@ export default function AdminDashboard() {
     { key: 'bank', label: 'Bank', icon: '🏦' },
     { key: 'contacts', label: 'Contact', icon: '📱' },
     { key: 'music', label: 'Music', icon: '🎵' },
+    { key: 'theme', label: 'Theme', icon: '🎨' },
   ];
 
   const inputClass = "w-full min-h-[48px] rounded-xl border border-border bg-background px-4 text-foreground focus:ring-2 focus:ring-ring";
@@ -836,6 +839,70 @@ export default function AdminDashboard() {
                 💾 Save Contacts
               </motion.button>
             </form>
+          </div>
+        )}
+
+        {/* THEME TAB */}
+        {tab === 'theme' && (
+          <div className="space-y-6">
+            <div className={sectionCard}>
+              <h3 className="font-display text-lg font-semibold text-foreground">🎨 Invitation Theme</h3>
+              <p className="text-sm text-muted-foreground">Choose a romantic theme for your wedding invitation. This changes the color palette and visual mood for all guests.</p>
+
+              <div className="grid grid-cols-2 gap-4">
+                {(Object.keys(THEME_INFO) as ThemeName[]).map((themeName) => {
+                  const info = THEME_INFO[themeName];
+                  const isActive = theme === themeName;
+                  return (
+                    <motion.button
+                      key={themeName}
+                      onClick={() => { setTheme(themeName); toast.success(`${info.emoji} ${info.label} theme applied!`); }}
+                      className={`relative rounded-2xl p-5 text-left transition-all border-2 ${
+                        isActive
+                          ? 'border-accent shadow-luxury scale-[1.02]'
+                          : 'border-border/30 hover:border-accent/40 hover:shadow-surface'
+                      }`}
+                      style={{
+                        background: isActive
+                          ? `linear-gradient(145deg, ${info.colors[2]}40, ${info.colors[0]}20)`
+                          : undefined,
+                      }}
+                      whileHover={{ scale: isActive ? 1.02 : 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      {isActive && (
+                        <motion.div
+                          className="absolute top-2 right-2 w-6 h-6 rounded-full bg-accent text-accent-foreground flex items-center justify-center text-xs"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', bounce: 0.5 }}
+                        >
+                          ✓
+                        </motion.div>
+                      )}
+                      <div className="text-2xl mb-2">{info.emoji}</div>
+                      <h4 className="font-display font-semibold text-foreground text-sm">{info.label}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">{info.description}</p>
+                      <div className="flex gap-1.5 mt-3">
+                        {info.colors.map((c, ci) => (
+                          <div
+                            key={ci}
+                            className="w-6 h-6 rounded-full border border-border/30"
+                            style={{ background: c }}
+                          />
+                        ))}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              <div className="glass-card rounded-2xl p-4 mt-4">
+                <p className="text-xs text-muted-foreground">
+                  💡 <strong>Current theme:</strong> {THEME_INFO[theme].emoji} {THEME_INFO[theme].label} — All guests will see this theme on their invitation.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
