@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { WeddingDataProvider } from "@/contexts/WeddingDataContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import InvitationPage from "./pages/InvitationPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import AuthGuard from "./components/AuthGuard";
@@ -16,15 +17,17 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <WeddingDataProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<InvitationPage />} />
-            <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </WeddingDataProvider>
+      <ThemeProvider>
+        <WeddingDataProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<InvitationPage />} />
+              <Route path="/admin" element={<AuthGuard><AdminDashboard /></AuthGuard>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </WeddingDataProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
