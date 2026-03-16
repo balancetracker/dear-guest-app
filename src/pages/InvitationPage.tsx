@@ -41,6 +41,7 @@ export default function InvitationPage() {
             <FloatingHearts />
             <FloatingDaisies />
             <SparkleEffect />
+            <CuteEmojiRain />
             <LanguageSwitcher />
             <MusicToggle />
 

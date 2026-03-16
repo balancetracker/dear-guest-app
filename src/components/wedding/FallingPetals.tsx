@@ -38,7 +38,7 @@ export default function FallingPetals() {
             filter: 'saturate(0.6)',
           }}
         >
-          🌸
+          {['🌸', '🌺', '🏵️', '💮', '🌷'][p.id % 5]}
         </span>
       ))}
     </div>
