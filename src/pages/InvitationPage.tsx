@@ -6,6 +6,7 @@ import FallingPetals from '@/components/wedding/FallingPetals';
 import FloatingHearts from '@/components/wedding/FloatingHearts';
 import FloatingDaisies from '@/components/wedding/FloatingDaisies';
 import SparkleEffect from '@/components/wedding/SparkleEffect';
+import CuteEmojiRain from '@/components/wedding/CuteEmojiRain';
 import LanguageSwitcher from '@/components/wedding/LanguageSwitcher';
 import MusicToggle from '@/components/wedding/MusicToggle';
 import HeroSection from '@/components/wedding/HeroSection';
